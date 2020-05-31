@@ -1,6 +1,7 @@
 require('isomorphic-fetch');
 const dotenv = require('dotenv');
 const Koa = require('koa');
+const koaBody = require('koa-body');
 const next = require('next');
 const { default: createShopifyAuth } = require('@shopify/koa-shopify-auth');
 const { verifyRequest } = require('@shopify/koa-shopify-auth');
@@ -27,6 +28,7 @@ const {
 app.prepare().then(() => {
   const server = new Koa();
   const router = new Router();
+  server.use(koaBody());
   server.use(session({ secure: true, sameSite: 'none' }, server));
   server.keys = [SHOPIFY_API_SECRET_KEY];
 
@@ -134,31 +136,31 @@ app.prepare().then(() => {
 
   router.put('/api/themes/:id/config', async (ctx) => {
     const { shop, accessToken } = ctx.session;
-    const body = ctx.request.body;
 
-    console.log('ctx', ctx);
-    console.log('ctx.request', ctx.request);
-    console.log('ctx.request.body', ctx.request.body);
+    const asset = ctx.request.body;
 
     try {
-      const fetchURL = "https://" + shop + "/admin/api/2019-04/themes/" + ctx.params.id + "/assets.json?asset[key]=config/settings_data.json";
+      const fetchURL = "https://" + shop + "/admin/api/2019-04/themes/" + ctx.params.id + "/assets.json";
 
       const results = await fetch(fetchURL, {
+        method: "PUT",
+        body: asset,
         headers: {
           "X-Shopify-Access-Token": accessToken,
+          'Content-Type': 'application/json',
         },
-        body: { body },
       })
-        .then(response => response.json())
-        .then(json => json);
+        .then(response => response);
 
       ctx.body = {
         status: 'success',
         data: results,
       };
+
     } catch (err) {
       console.log(err);
     }
+
   })
 
   router.get('*', verifyRequest(), async (ctx) => {
