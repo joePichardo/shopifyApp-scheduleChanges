@@ -133,7 +133,7 @@ class ThemeCommands extends React.Component {
     const fetchURL = `/api/themes/${this.state.activeTheme.id}/config`;
     const options = {
       method: 'PUT',
-      body: JSON.stringify({ asset: { key: asset.key, value: asset.value } })
+      body: JSON.stringify({ asset })
     };
 
     return fetch(fetchURL, options)
