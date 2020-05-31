@@ -78,7 +78,7 @@ class ThemeCommands extends React.Component {
     console.log('handle theme update')
     const { stagingThemeName } = this.state;
 
-    fetch(`/api/themes`, {
+    const response = await fetch(`/api/themes`, {
       method: 'GET',
     }).then(response => response.json())
       .then(json => {
@@ -129,13 +129,15 @@ class ThemeCommands extends React.Component {
   }
 
   updateThemeFile = (asset) => {
-    return fetch(`/api/themes/${this.state.activeTheme.id}/config`, {
+
+    const fetchURL = `/api/themes/${this.state.activeTheme.id}/config`;
+    const options = {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: { test: "tesing" }
-    }).then(response => response.json())
+      body: JSON.stringify({ asset: { key: asset.key, value: asset.value } })
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
       .then(json => json)
       .catch(error => alert(error));
   }
