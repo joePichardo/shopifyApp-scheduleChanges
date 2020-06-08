@@ -9,6 +9,8 @@ import {
   Stack,
   TextField,
   TextStyle,
+  DatePicker,
+  Select
 } from '@shopify/polaris';
 var _ = require('lodash');
 
@@ -16,11 +18,52 @@ class ThemeCommands extends React.Component {
   state = {
     activeTheme: {},
     stagingThemeName: 'Staging-Debut',
-    stagingTheme: {}
+    stagingTheme: {},
+    selectedDate: new Date(),
+    selectedMonth: new Date().getMonth(),
+    selectedYear: new Date().getFullYear(),
+    selectedHour: '00',
+    selectedMinute: '00',
+    hourOptions: [
+      { label: '12 am', value: '00' },
+      { label: '1 am', value: '01' },
+      { label: '2 am', value: '02' },
+      { label: '3 am', value: '03' },
+      { label: '4 am', value: '04' },
+      { label: '5 am', value: '05' },
+      { label: '6 am', value: '06' },
+      { label: '7 am', value: '07' },
+      { label: '8 am', value: '08' },
+      { label: '9 am', value: '09' },
+      { label: '10 am', value: '10' },
+      { label: '11 am', value: '11' },
+      { label: '12 pm', value: '12' },
+      { label: '1 pm', value: '13' },
+      { label: '2 pm', value: '14' },
+      { label: '3 pm', value: '15' },
+      { label: '4 pm', value: '16' },
+      { label: '5 pm', value: '17' },
+      { label: '6 pm', value: '18' },
+      { label: '7 pm', value: '19' },
+      { label: '8 pm', value: '20' },
+      { label: '9 pm', value: '21' },
+      { label: '10 pm', value: '22' },
+      { label: '11 pm', value: '23' },
+    ],
+    minuteOptions: [
+      { label: '00', value: '00' },
+      { label: '15', value: '15' },
+      { label: '30', value: '30' },
+      { label: '45', value: '45' },
+    ],
   };
 
   render() {
-    const { stagingThemeName } = this.state;
+    const { stagingThemeName, selectedDate, minuteOptions, hourOptions, selectedMinute, selectedHour } = this.state;
+    const today = new Date()
+    const yesterday = new Date(today)
+
+    yesterday.setDate(yesterday.getDate() - 1)
 
     return (
       <Page>
@@ -48,6 +91,45 @@ class ThemeCommands extends React.Component {
             </Card>
           </Layout.AnnotatedSection>
           <Layout.AnnotatedSection
+            title="Schedule a date and time for the settings to be changed/updated"
+            description="Make sure you have reviewed your changes before scheduling a change"
+          >
+            <Card sectioned>
+              <Form onSubmit={this.handleScheduleSubmit}>
+                <FormLayout>
+                  <DatePicker
+                    month={this.state.selectedMonth}
+                    onMonthChange={this.handleChange('selectedMonth')}
+                    year={this.state.selectedYear}
+                    onChange={this.handleChange('selectedDate')}
+                    selected={selectedDate}
+                    allowRange={false}
+                    disableDatesBefore={yesterday}
+                  />
+                </FormLayout>
+                <FormLayout.Group>
+                  <Select
+                    label="Hour"
+                    options={hourOptions}
+                    onChange={this.handleChange('selectedHour')}
+                    value={selectedHour}
+                  />
+                  <Select
+                    label="Minute"
+                    options={minuteOptions}
+                    onChange={this.handleChange('selectedMinute')}
+                    value={selectedMinute}
+                  />
+                  <Stack distribution="trailing">
+                    <Button primary submit>
+                      Save
+                    </Button>
+                  </Stack>
+                </FormLayout.Group>
+              </Form>
+            </Card>
+          </Layout.AnnotatedSection>
+          <Layout.AnnotatedSection
             title="Update Now"
             description="Update changes on your staging theme to the live theme."
           >
@@ -71,6 +153,25 @@ class ThemeCommands extends React.Component {
       stagingThemeName: this.state.stagingThemeName,
     });
     console.log('submission staging theme', this.state);
+
+  };
+
+  handleScheduleSubmit = () => {
+
+    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute } = this.state;
+
+    var dateRetrieved;
+
+    if (selectedDate.start) {
+      dateRetrieved = selectedDate.start;
+    } else {
+      dateRetrieved = selectedDate;
+    }
+
+
+    var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
+    console.log('scheduledDay iso', scheduledDay.toISOString());
+
 
   };
 
