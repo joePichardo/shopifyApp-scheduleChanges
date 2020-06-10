@@ -78,7 +78,7 @@ app.prepare().then(() => {
 
         const registration = await registerWebhook({
           address: `${HOST}/webhooks/themes/update`,
-          topic: 'THEMES_UPDATED',
+          topic: 'THEMES_UPDATE',
           accessToken,
           shop,
           apiVersion: ApiVersion.October19
@@ -97,7 +97,7 @@ app.prepare().then(() => {
 
   const webhook = receiveWebhook({secret: SHOPIFY_API_SECRET_KEY});
 
-  router.post('/webhooks/products/create', webhook, (ctx) => {
+  router.post('/webhooks/themes/update', webhook, (ctx) => {
     console.log('received webhook: ', ctx.state.webhook);
   });
 
