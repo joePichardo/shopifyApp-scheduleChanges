@@ -46,6 +46,22 @@ app.prepare().then(() => {
           sameSite: 'none'
         });
 
+        const response = await fetch(`http://localhost:3001/account/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            "X-Shopify-Access-Token": accessToken,
+          },
+          body: JSON.stringify({
+            storeAddress: shop,
+            accessToken: accessToken
+          })
+        })
+
+        const responseJson = await response.json();
+
+        console.log(responseJson);
+
         // const registration = await registerWebhook({
         //   address: `${HOST}/webhooks/products/create`,
         //   topic: 'PRODUCTS_CREATE',
