@@ -156,9 +156,9 @@ class ThemeCommands extends React.Component {
 
   };
 
-  handleScheduleSubmit = () => {
+  handleScheduleSubmit = async () => {
 
-    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute } = this.state;
+    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute, stagingThemeName } = this.state;
 
     var dateRetrieved;
 
@@ -172,6 +172,47 @@ class ThemeCommands extends React.Component {
     var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
     console.log('scheduledDay iso', scheduledDay.toISOString());
 
+    const response = await fetch(`/api/themes`, {
+      method: 'GET',
+    }).then(response => response.json())
+      .then(json => {
+
+        if (json.data.themes !== undefined) {
+          var themes = json.data.themes;
+          themes.forEach((theme) => {
+            if (theme.name === stagingThemeName) {
+              this.setState({
+                stagingTheme: theme,
+              });
+            }
+
+            if (theme.role === "main") {
+              this.setState({
+                activeTheme: theme,
+              });
+            }
+          })
+        }
+
+        if (_.isEmpty(this.state.stagingTheme) ) {
+          throw new Error('Did not find staging theme');
+        }
+
+        if(_.isEmpty(this.state.activeTheme)) {
+          throw new Error('Did not find active theme');
+        }
+
+        return this.getThemeFile();
+      }).then(json => {
+        const asset = {
+          key: json.data.asset.key,
+          value: json.data.asset.value
+        }
+        return this.scheduleThemeFile({ date: scheduledDay.toISOString(), asset });
+      })
+      .catch(error => alert(error));
+
+    console.log(response);
 
   };
 
@@ -235,6 +276,20 @@ class ThemeCommands extends React.Component {
     const options = {
       method: 'PUT',
       body: JSON.stringify({ asset })
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
+
+  scheduleThemeFile = (schedule) => {
+
+    const fetchURL = `/api/themes/${this.state.activeTheme.id}/schedule`;
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(schedule)
     };
 
     return fetch(fetchURL, options)
