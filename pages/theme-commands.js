@@ -183,7 +183,7 @@ class ThemeCommands extends React.Component {
           throw new Error('Did not find current themes');
         }
 
-        return this.getThemeFile();
+        return this.getActiveThemeFile();
       }).then(json => {
         const asset = {
           key: json.data.asset.key,
@@ -243,7 +243,7 @@ class ThemeCommands extends React.Component {
           throw new Error('Did not find current themes');
         }
 
-        return this.getThemeFile();
+        return this.getStagingThemeFile();
       }).then(json => {
         const asset = {
           key: json.data.asset.key,
@@ -255,8 +255,16 @@ class ThemeCommands extends React.Component {
 
   };
 
-  getThemeFile = () => {
+  getStagingThemeFile = () => {
     return fetch(`/api/themes/${this.state.stagingTheme.id}/config`, {
+      method: 'GET',
+    }).then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
+
+  getActiveThemeFile = () => {
+    return fetch(`/api/themes/${this.state.activeTheme.id}/config`, {
       method: 'GET',
     }).then(response => response.json())
       .then(json => json)
