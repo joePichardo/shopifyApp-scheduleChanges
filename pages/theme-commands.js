@@ -172,9 +172,7 @@ class ThemeCommands extends React.Component {
     var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
     console.log('scheduledDay iso', scheduledDay.toISOString());
 
-    const response = await fetch(`/api/themes`, {
-      method: 'GET',
-    }).then(response => response.json())
+    const response = await this.getThemeList()
       .then(json => {
         return this.findCurrentThemes(json);
       }).then(themesFound => {
@@ -232,9 +230,7 @@ class ThemeCommands extends React.Component {
     console.log('handle theme update')
     const { stagingThemeName } = this.state;
 
-    const response = await fetch(`/api/themes`, {
-      method: 'GET',
-    }).then(response => response.json())
+    const response = await this.getThemeList()
       .then(json => {
         return this.findCurrentThemes(json);
       }).then(themesFound => {
@@ -254,6 +250,18 @@ class ThemeCommands extends React.Component {
       .catch(error => alert(error));
 
   };
+
+  getThemeList = () => {
+    const fetchURL = `/api/themes`;
+    const options = {
+      method: 'GET'
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
 
   getThemeFileById = (id) => {
     return fetch(`/api/themes/${id}/config`, {
