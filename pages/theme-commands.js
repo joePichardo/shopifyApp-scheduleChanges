@@ -158,7 +158,7 @@ class ThemeCommands extends React.Component {
 
   handleScheduleSubmit = async () => {
 
-    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute, stagingThemeName } = this.state;
+    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute } = this.state;
 
     var dateRetrieved;
 
@@ -176,30 +176,11 @@ class ThemeCommands extends React.Component {
       method: 'GET',
     }).then(response => response.json())
       .then(json => {
+        return this.findCurrentThemes(json);
+      }).then(themesFound => {
 
-        if (json.data.themes !== undefined) {
-          var themes = json.data.themes;
-          themes.forEach((theme) => {
-            if (theme.name === stagingThemeName) {
-              this.setState({
-                stagingTheme: theme,
-              });
-            }
-
-            if (theme.role === "main") {
-              this.setState({
-                activeTheme: theme,
-              });
-            }
-          })
-        }
-
-        if (_.isEmpty(this.state.stagingTheme) ) {
-          throw new Error('Did not find staging theme');
-        }
-
-        if(_.isEmpty(this.state.activeTheme)) {
-          throw new Error('Did not find active theme');
+        if (!themesFound) {
+          throw new Error('Did not find current themes');
         }
 
         return this.getThemeFile();
@@ -216,6 +197,37 @@ class ThemeCommands extends React.Component {
 
   };
 
+  findCurrentThemes = (json) => {
+    const { stagingThemeName } = this.state;
+
+    if (json.data.themes !== undefined) {
+      var themes = json.data.themes;
+      themes.forEach((theme) => {
+        if (theme.name === stagingThemeName) {
+          this.setState({
+            stagingTheme: theme,
+          });
+        }
+
+        if (theme.role === "main") {
+          this.setState({
+            activeTheme: theme,
+          });
+        }
+      })
+    }
+
+    if (_.isEmpty(this.state.stagingTheme) ) {
+      throw new Error('Did not find staging theme');
+    }
+
+    if(_.isEmpty(this.state.activeTheme)) {
+      throw new Error('Did not find active theme');
+    }
+
+    return true;
+  }
+
   handleThemeUpdate = async () => {
     console.log('handle theme update')
     const { stagingThemeName } = this.state;
@@ -224,30 +236,11 @@ class ThemeCommands extends React.Component {
       method: 'GET',
     }).then(response => response.json())
       .then(json => {
+        return this.findCurrentThemes(json);
+      }).then(themesFound => {
 
-        if (json.data.themes !== undefined) {
-          var themes = json.data.themes;
-          themes.forEach((theme) => {
-            if (theme.name === stagingThemeName) {
-              this.setState({
-                stagingTheme: theme,
-              });
-            }
-
-            if (theme.role === "main") {
-              this.setState({
-                activeTheme: theme,
-              });
-            }
-          })
-        }
-
-        if (_.isEmpty(this.state.stagingTheme) ) {
-          throw new Error('Did not find staging theme');
-        }
-
-        if(_.isEmpty(this.state.activeTheme)) {
-          throw new Error('Did not find active theme');
+        if (!themesFound) {
+          throw new Error('Did not find current themes');
         }
 
         return this.getThemeFile();
