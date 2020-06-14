@@ -181,6 +181,33 @@ app.prepare().then(() => {
 
   })
 
+  router.get('/api/themes/schedules', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/theme/schedules`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+          "store-address": shop,
+        }
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        themeSchedules: responseJson.themeSchedules,
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
 
   router.post('/api/themes/:id/schedule', async (ctx) => {
     const { shop, accessToken } = ctx.session;
