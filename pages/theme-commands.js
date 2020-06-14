@@ -107,26 +107,32 @@ class ThemeCommands extends React.Component {
                     allowRange={false}
                     disableDatesBefore={yesterday}
                   />
-                </FormLayout>
-                <FormLayout.Group>
-                  <Select
-                    label="Hour"
-                    options={hourOptions}
-                    onChange={this.handleChange('selectedHour')}
-                    value={selectedHour}
-                  />
-                  <Select
-                    label="Minute"
-                    options={minuteOptions}
-                    onChange={this.handleChange('selectedMinute')}
-                    value={selectedMinute}
+                  <FormLayout.Group>
+                    <Select
+                      label="Hour"
+                      options={hourOptions}
+                      onChange={this.handleChange('selectedHour')}
+                      value={selectedHour}
+                    />
+                    <Select
+                      label="Minute"
+                      options={minuteOptions}
+                      onChange={this.handleChange('selectedMinute')}
+                      value={selectedMinute}
+                    />
+                  </FormLayout.Group>
+                  <TextField
+                    value={scheduleDescription}
+                    onChange={this.handleChange('scheduleDescription')}
+                    label="Scheduled change description"
+                    type="text"
                   />
                   <Stack distribution="trailing">
                     <Button primary submit>
                       Save
                     </Button>
                   </Stack>
-                </FormLayout.Group>
+                </FormLayout>
               </Form>
             </Card>
           </Layout.AnnotatedSection>
