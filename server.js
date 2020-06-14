@@ -141,6 +141,8 @@ app.prepare().then(() => {
         .then(response => response.json())
         .then(json => json);
 
+      results.themeId = ctx.params.id;
+
       ctx.body = {
         status: 'success',
         data: results,
@@ -186,10 +188,6 @@ app.prepare().then(() => {
     const body = ctx.request.body;
     const bodyObj = JSON.parse(body);
 
-    console.log("bodyObj.asset", bodyObj.asset);
-    console.log("bodyObj.asset.key", bodyObj.asset.key);
-    console.log("bodyObj.asset.value", bodyObj.asset.value);
-
     try {
 
       const response = await fetch(`http://localhost:3001/theme/schedule`, {
@@ -200,19 +198,53 @@ app.prepare().then(() => {
         },
         body: JSON.stringify({
           storeAddress: shop,
-          date: bodyObj.date,
-          key: bodyObj.asset.key,
-          value: bodyObj.asset.value
+          scheduleAt: bodyObj.date,
+          fileKey: bodyObj.asset.key,
+          fileValue: bodyObj.asset.value,
+          backupId: bodyObj.backupId
         })
       })
 
       const responseJson = await response.json();
 
-      console.log(responseJson);
+      ctx.body = {
+        status: 'success',
+        data: responseJson,
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
+  router.post('/api/themes/:id/backup', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const body = ctx.request.body;
+    const bodyObj = JSON.parse(body);
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/theme/backup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+        },
+        body: JSON.stringify({
+          storeAddress: shop,
+          fileKey: bodyObj.key,
+          fileValue: bodyObj.value,
+          themeId: ctx.params.id
+        })
+      })
+
+      const responseJson = await response.json();
 
       ctx.body = {
         status: 'success',
-        data: response,
+        data: responseJson,
       };
 
     } catch (err) {
