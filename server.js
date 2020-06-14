@@ -201,7 +201,8 @@ app.prepare().then(() => {
           scheduleAt: bodyObj.date,
           fileKey: bodyObj.asset.key,
           fileValue: bodyObj.asset.value,
-          backupId: bodyObj.backupId
+          backupId: bodyObj.backupId,
+          description: bodyObj.description
         })
       })
 
