@@ -160,7 +160,7 @@ class ThemeCommands extends React.Component {
 
     const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute } = this.state;
 
-    var dateRetrieved;
+    var dateRetrieved, scheduleBackupId;
 
     if (selectedDate.start) {
       dateRetrieved = selectedDate.start;
@@ -170,7 +170,6 @@ class ThemeCommands extends React.Component {
 
 
     var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
-    console.log('scheduledDay iso', scheduledDay.toISOString());
 
     const response = await this.getThemeList()
       .then(json => {
@@ -187,11 +186,22 @@ class ThemeCommands extends React.Component {
           key: json.data.asset.key,
           value: json.data.asset.value
         }
-        return this.scheduleThemeFile({ date: scheduledDay.toISOString(), asset });
+
+        return this.backupThemeFile({ themeId: json.data.themeId, data: asset });
+      }).then(({ data }) => {
+
+        scheduleBackupId = data.themeBackup.id;
+
+        return this.getThemeFileById(this.state.stagingTheme.id);
+      }).then(json => {
+        const asset = {
+          key: json.data.asset.key,
+          value: json.data.asset.value
+        }
+
+        return this.scheduleThemeFile({ date: scheduledDay.toISOString(), backupId: scheduleBackupId, asset });
       })
       .catch(error => alert(error));
-
-    console.log(response);
 
   };
 
@@ -285,9 +295,23 @@ class ThemeCommands extends React.Component {
       .catch(error => alert(error));
   }
 
+  backupThemeFile = ({ themeId, data }) => {
+
+    const fetchURL = `/api/themes/${themeId}/backup`;
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(data)
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
+
   scheduleThemeFile = (schedule) => {
 
-    const fetchURL = `/api/themes/${this.state.activeTheme.id}/schedule`;
+    const fetchURL = `/api/themes/${this.state.stagingTheme.id}/schedule`;
     const options = {
       method: 'POST',
       body: JSON.stringify(schedule)
