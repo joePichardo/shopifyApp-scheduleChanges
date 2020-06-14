@@ -61,7 +61,7 @@ class ThemeSchedules extends React.Component {
                   return (
                     <div key={schedule.id}>
                       <div>{schedule.description}</div>
-                      <div>Scheduled For: {schedule.scheduleAt}</div>
+                      <div>Scheduled For: {new Date(schedule.scheduleAt).toString()}</div>
                       <div>Deployed {schedule.deployed ? "Yes" : "No"}</div>
                     </div>
                   )
