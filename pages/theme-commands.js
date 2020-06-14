@@ -24,6 +24,7 @@ class ThemeCommands extends React.Component {
     selectedYear: new Date().getFullYear(),
     selectedHour: '00',
     selectedMinute: '00',
+    scheduleDescription: "",
     hourOptions: [
       { label: '12 am', value: '00' },
       { label: '1 am', value: '01' },
@@ -59,7 +60,7 @@ class ThemeCommands extends React.Component {
   };
 
   render() {
-    const { stagingThemeName, selectedDate, minuteOptions, hourOptions, selectedMinute, selectedHour } = this.state;
+    const { stagingThemeName, selectedDate, minuteOptions, hourOptions, selectedMinute, selectedHour, scheduleDescription } = this.state;
     const today = new Date()
     const yesterday = new Date(today)
 
@@ -158,7 +159,7 @@ class ThemeCommands extends React.Component {
 
   handleScheduleSubmit = async () => {
 
-    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute } = this.state;
+    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute, scheduleDescription } = this.state;
 
     var dateRetrieved, scheduleBackupId;
 
@@ -199,7 +200,12 @@ class ThemeCommands extends React.Component {
           value: json.data.asset.value
         }
 
-        return this.scheduleThemeFile({ date: scheduledDay.toISOString(), backupId: scheduleBackupId, asset });
+        return this.scheduleThemeFile({ date: scheduledDay.toISOString(), backupId: scheduleBackupId, asset, description: scheduleDescription });
+      }).then(() => {
+        this.setState({
+          scheduleDescription: ""
+        });
+        return true;
       })
       .catch(error => alert(error));
 
