@@ -20,3 +20,16 @@ To start server
     - Show history of scheduled change
     - make pagination for scheduled changes
     - add search function with date ranges
+    
+- Add notifications
+    - Add a loading spinner when fetching (loading button state,)
+    - Add a success banner on success
+    - Add an error banner on error
+
+- Add a cron function to deploy scheduled changes
+    - Use an api call every 15 minutes to check schedule table and perform the theme change
+    - Make all the calls async to prevent await for every deployment
+    
+- Error Handling
+    - prevent user to choose a time that has passed when creating a new schedule, show a thoughtful error
+     
