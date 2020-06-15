@@ -10,9 +10,13 @@ import {
   TextField,
   TextStyle,
   DatePicker,
-  Select, EmptyState
+  Select, EmptyState,
+  ResourceList,
+  ResourceItem,
+  Pagination
 } from '@shopify/polaris';
 var _ = require('lodash');
+var moment = require('moment');
 
 const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
@@ -55,21 +59,47 @@ class ThemeSchedules extends React.Component {
               <p>Use theme commands page to schedule new changes to your website. Return here to view your scheduled changes.</p>
             </EmptyState>
             :
-            <div>
-              {
-                this.state.scheduleList.map(schedule => {
-                  return (
-                    <div key={schedule.id}>
-                      <div>{schedule.description}</div>
-                      <div>Scheduled For: {new Date(schedule.scheduleAt).toString()}</div>
-                      <div>Deployed {schedule.deployed ? "Yes" : "No"}</div>
-                    </div>
-                  )
-                })
-              }
-            </div>
-          }
+            <Layout.Section>
+              <Card>
+                <ResourceList
+                  resourceName={{singular: 'schedule', plural: 'schedules'}}
+                  items={this.state.scheduleList}
+                  renderItem={(item) => {
+                    const {id, description, scheduleAt, deployed, backupId} = item;
 
+                    return (
+                      <ResourceItem
+                        id={id}
+                        accessibilityLabel={`Scheduled change description: ${description}`}
+                      >
+                        <h3>
+                          <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
+                        </h3>
+                        <div>{description}</div>
+                        <div>Deployed: {deployed ? "Yes" : "No"}</div>
+                      </ResourceItem>
+                    );
+                  }}
+                />
+              </Card>
+              <div style={{height: '100px', marginTop: '15px'}}>
+                <Pagination
+                  hasPrevious
+                  previousKeys={[74]}
+                  previousTooltip="j"
+                  onPrevious={() => {
+                    console.log('Previous');
+                  }}
+                  hasNext
+                  nextKeys={[75]}
+                  nextTooltip="k"
+                  onNext={() => {
+                    console.log('Next');
+                  }}
+                />
+              </div>
+            </Layout.Section>
+          }
         </Layout>
       </Page>
     );
