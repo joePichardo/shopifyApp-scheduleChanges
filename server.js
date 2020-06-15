@@ -208,6 +208,39 @@ app.prepare().then(() => {
 
   })
 
+  router.post('/api/themes/schedule/delete', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const body = ctx.request.body;
+    const bodyObj = JSON.parse(body);
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/theme/schedule/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+          "store-address": shop,
+        },
+        body: JSON.stringify({
+          scheduleId: bodyObj.scheduleId,
+        })
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        data: responseJson,
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
 
   router.post('/api/themes/:id/schedule', async (ctx) => {
     const { shop, accessToken } = ctx.session;
