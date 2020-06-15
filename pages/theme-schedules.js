@@ -22,7 +22,8 @@ const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
 class ThemeSchedules extends React.Component {
   state = {
-    scheduleList: []
+    scheduleList: [],
+    selectedItems: []
   };
 
   componentDidMount() {
@@ -48,6 +49,13 @@ class ThemeSchedules extends React.Component {
 
   render() {
 
+    const bulkActions = [
+      {
+        content: 'Delete schedules',
+        onAction: () => this.deleteThemeSchedule(),
+      },
+    ];
+
     return (
       <Page>
         <Layout>
@@ -64,6 +72,10 @@ class ThemeSchedules extends React.Component {
                 <ResourceList
                   resourceName={{singular: 'schedule', plural: 'schedules'}}
                   items={this.state.scheduleList}
+                  bulkActions={bulkActions}
+                  selectable
+                  selectedItems={this.state.selectedItems}
+                  onSelectionChange={this.setSelectedItems}
                   renderItem={(item) => {
                     const {id, description, scheduleAt, deployed, backupId} = item;
 
@@ -114,6 +126,48 @@ class ThemeSchedules extends React.Component {
     console.log('submit state', this.state);
 
   };
+
+  setSelectedItems = (items) => {
+    console.log("selection changed", items)
+
+    this.setState({
+      selectedItems: items,
+    });
+  };
+
+  deleteThemeSchedule = () => {
+    console.log("deleteThemeSchedule")
+
+    const { selectedItems, scheduleList } = this.state;
+
+    for (var i = 0; i < selectedItems.length; i++) {
+      console.log("delete schedule", selectedItems[i]);
+
+      const data = {
+        scheduleId: selectedItems[i]
+      }
+
+
+      const fetchURL = `/api/themes/schedule/delete`;
+      const options = {
+        method: 'POST',
+        body: JSON.stringify(data)
+      };
+
+      fetch(fetchURL, options)
+        .then(response => response.json())
+        .then(json => {
+          console.log("schedule delete response json", json)
+
+          const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
+          this.setState({ scheduleList: newScheduleList });
+
+          return json;
+        })
+        .catch(error => alert(error));
+    }
+
+  }
 
 }
 
