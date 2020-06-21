@@ -15,8 +15,7 @@ To start server
 - Add `stagingThemeName` to account table to keep track of users themes
 
 - Show a list of scheduled changes
-    - User can delete a scheduled change
-    - User can revert to a backup from a scheduled change
+    - add alert on delete and revert backup functions to prevent accidental changes
     - Show history of scheduled change
     - make pagination for scheduled changes
     - add search function with date ranges
