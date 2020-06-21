@@ -52,7 +52,7 @@ class ThemeSchedules extends React.Component {
     const bulkActions = [
       {
         content: 'Delete schedules',
-        onAction: () => this.deleteThemeSchedule(),
+        onAction: () => this.deleteThemeSchedules(),
       },
     ];
 
@@ -135,8 +135,8 @@ class ThemeSchedules extends React.Component {
     });
   };
 
-  deleteThemeSchedule = () => {
-    console.log("deleteThemeSchedule")
+  deleteThemeSchedules = () => {
+    console.log("deleteThemeSchedules")
 
     const { selectedItems, scheduleList } = this.state;
 
