@@ -79,10 +79,22 @@ class ThemeSchedules extends React.Component {
                   renderItem={(item) => {
                     const {id, description, scheduleAt, deployed, backupId} = item;
 
+                    const shortcutActions = [
+                      {
+                        content: 'Delete schedule',
+                        onAction: () => this.shortcutDeleteSchedule(id),
+                      },
+                      {
+                        content: 'Revert backup',
+                        onAction: () => this.shortcutRevertBackup(backupId),
+                      },
+                    ];
+
                     return (
                       <ResourceItem
                         id={id}
                         accessibilityLabel={`Scheduled change description: ${description}`}
+                        shortcutActions={shortcutActions}
                       >
                         <h3>
                           <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
@@ -126,6 +138,37 @@ class ThemeSchedules extends React.Component {
     console.log('submit state', this.state);
 
   };
+
+  shortcutDeleteSchedule = (scheduleId) => {
+    const { scheduleList } = this.state;
+
+    const data = {
+      scheduleId: scheduleId
+    }
+
+    const fetchURL = `/api/themes/schedule/delete`;
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(data)
+    };
+
+    fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        console.log("schedule delete response json", json)
+
+        const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
+        this.setState({ scheduleList: newScheduleList });
+
+        return json;
+      })
+      .catch(error => alert(error));
+  }
+
+  shortcutRevertBackup = (backupId) => {
+    console.log('revert backup for: ', backupId);
+
+  }
 
   setSelectedItems = (items) => {
     console.log("selection changed", items)
