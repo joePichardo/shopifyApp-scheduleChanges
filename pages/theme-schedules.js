@@ -23,7 +23,8 @@ const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 class ThemeSchedules extends React.Component {
   state = {
     scheduleList: [],
-    selectedItems: []
+    selectedItems: [],
+    activeTheme: {}
   };
 
   componentDidMount() {
@@ -165,9 +166,84 @@ class ThemeSchedules extends React.Component {
       .catch(error => alert(error));
   }
 
-  shortcutRevertBackup = (backupId) => {
+  getThemeList = () => {
+    const fetchURL = `/api/themes`;
+    const options = {
+      method: 'GET'
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
+
+  findCurrentThemes = (json) => {
+    if (json.data.themes !== undefined) {
+      var themes = json.data.themes;
+      themes.forEach((theme) => {
+        if (theme.role === "main") {
+          this.setState({
+            activeTheme: theme,
+          });
+        }
+      })
+    }
+
+    if(_.isEmpty(this.state.activeTheme)) {
+      throw new Error('Did not find active theme');
+    }
+
+    return true;
+  }
+
+  shortcutRevertBackup = async (backupId) => {
     console.log('revert backup for: ', backupId);
 
+    const response = await this.getThemeList()
+      .then(json => {
+        return this.findCurrentThemes(json);
+      }).then(themesFound => {
+
+        if (!themesFound) {
+          throw new Error('Did not find current themes');
+        }
+
+        return this.getBackupThemeFile(backupId);
+      }).then(json => {
+        const asset = {
+          key: json.data.themeBackup.fileKey,
+          value: json.data.themeBackup.fileValue
+        }
+        console.log('asset', asset);
+
+        return this.updateThemeFile(asset);
+      })
+      .catch(error => alert(error));
+
+    console.log('revert backup response', response);
+  }
+
+  getBackupThemeFile = (id) => {
+    return fetch(`/api/themes/${id}/backup`, {
+      method: 'GET',
+    }).then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
+
+  updateThemeFile = (asset) => {
+
+    const fetchURL = `/api/themes/${this.state.activeTheme.id}/config`;
+    const options = {
+      method: 'PUT',
+      body: JSON.stringify({ asset })
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
   }
 
   setSelectedItems = (items) => {
