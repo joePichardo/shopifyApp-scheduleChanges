@@ -314,6 +314,35 @@ app.prepare().then(() => {
 
   })
 
+  router.get('/api/themes/:id/backup', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const id = ctx.params.id;
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/theme/backup/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+          "store-address": shop,
+        },
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        data: responseJson,
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
   router.get('*', verifyRequest(), async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
