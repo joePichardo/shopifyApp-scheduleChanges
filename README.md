@@ -13,10 +13,10 @@ To start server
 ## Todo List
 
 - Add `stagingThemeName` to account table to keep track of users themes
+- Add button and function to make a backup of settings
 
 - Show a list of scheduled changes
-    - add alert on delete and revert backup functions to prevent accidental changes
-    - Show history of scheduled change
+    - Show history of deployed scheduled change
     - make pagination for scheduled changes
     - add search function with date ranges
     
