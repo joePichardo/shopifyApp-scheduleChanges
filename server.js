@@ -241,6 +241,44 @@ app.prepare().then(() => {
 
   })
 
+  router.post('/api/themes/schedule/update', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const body = ctx.request.body;
+    const bodyObj = JSON.parse(body);
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/theme/schedule/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+          "store-address": shop,
+        },
+        body: JSON.stringify({
+          scheduleId: bodyObj.id,
+          scheduleAt: bodyObj.scheduleAt,
+          fileKey: bodyObj.fileKey,
+          fileValue: bodyObj.fileValue,
+          description: bodyObj.description,
+          deployed: bodyObj.deployed
+        })
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        data: responseJson,
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
 
   router.post('/api/themes/:id/schedule', async (ctx) => {
     const { shop, accessToken } = ctx.session;
