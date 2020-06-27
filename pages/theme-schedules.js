@@ -221,7 +221,17 @@ class ThemeSchedules extends React.Component {
       value: scheduleItem.fileValue
     }
 
-    const response = await this.updateThemeFile(asset)
+    const response = await this.getThemeList()
+      .then(json => {
+        return this.findCurrentThemes(json);
+      }).then(themesFound => {
+
+        if (!themesFound) {
+          throw new Error('Did not find current themes');
+        }
+
+        return  this.updateThemeFile(asset);
+      })
       .then(json => {
 
         this.setState({
