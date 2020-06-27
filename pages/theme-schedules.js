@@ -33,7 +33,6 @@ class ThemeSchedules extends React.Component {
   };
 
   componentDidMount() {
-    console.log("mount");
 
     const fetchURL = `/api/themes/schedules`;
     const options = {
@@ -43,7 +42,6 @@ class ThemeSchedules extends React.Component {
     fetch(fetchURL, options)
       .then(response => response.json())
       .then(({themeSchedules}) => {
-        console.log('mount themeSchedules', themeSchedules)
 
         this.setState({
           scheduleList: themeSchedules,
@@ -220,7 +218,6 @@ class ThemeSchedules extends React.Component {
     fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => {
-        console.log("schedule delete response json", json)
 
         const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
         this.setState({ scheduleList: newScheduleList });
@@ -262,7 +259,6 @@ class ThemeSchedules extends React.Component {
   }
 
   shortcutRestoreBackup = async (backupId) => {
-    console.log('revert backup for: ', backupId);
 
     const response = await this.getThemeList()
       .then(json => {
@@ -279,13 +275,11 @@ class ThemeSchedules extends React.Component {
           key: json.data.themeBackup.fileKey,
           value: json.data.themeBackup.fileValue
         }
-        console.log('asset', asset);
 
         return this.updateThemeFile(asset);
       })
       .catch(error => alert(error));
 
-    console.log('revert backup response', response);
   }
 
   getBackupThemeFile = (id) => {
@@ -311,7 +305,6 @@ class ThemeSchedules extends React.Component {
   }
 
   setSelectedItems = (items) => {
-    console.log("selection changed", items)
 
     this.setState({
       selectedItems: items,
@@ -319,12 +312,10 @@ class ThemeSchedules extends React.Component {
   };
 
   deleteThemeSchedules = () => {
-    console.log("deleteThemeSchedules")
 
     const { selectedItems, scheduleList } = this.state;
 
     for (var i = 0; i < selectedItems.length; i++) {
-      console.log("delete schedule", selectedItems[i]);
 
       const data = {
         scheduleId: selectedItems[i]
@@ -340,7 +331,6 @@ class ThemeSchedules extends React.Component {
       fetch(fetchURL, options)
         .then(response => response.json())
         .then(json => {
-          console.log("schedule delete response json", json)
 
           const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
           this.setState({ scheduleList: newScheduleList });
