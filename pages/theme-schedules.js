@@ -230,18 +230,44 @@ class ThemeSchedules extends React.Component {
           throw new Error('Did not find current themes');
         }
 
-        return  this.updateThemeFile(asset);
+        return this.updateThemeFile(asset);
       })
       .then(json => {
+
+        let updatedScheduleItem = {
+          id: scheduleItem.id,
+          ownerId: scheduleItem.ownerId,
+          deployed: true
+        };
 
         this.setState({
           scheduleList: this.state.scheduleList.map(el => (el.id === scheduleItem.id ? {...el, deployed: true} : el))
         });
 
-        return json;
+
+        return this.updateSchedule(updatedScheduleItem);
+      })
+      .then(response => {
+        return response
       })
       .catch(error => alert(error));
 
+  }
+
+  updateSchedule = (schedule) => {
+
+    const fetchURL = `/api/themes/schedule/update`;
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(schedule)
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        return json;
+      })
+      .catch(error => alert(error));
   }
 
   shortcutDeleteSchedule = (scheduleId) => {
