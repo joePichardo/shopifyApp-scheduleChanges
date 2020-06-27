@@ -13,7 +13,9 @@ import {
   Select, EmptyState,
   ResourceList,
   ResourceItem,
-  Pagination
+  Pagination,
+  Modal,
+  TextContainer
 } from '@shopify/polaris';
 var _ = require('lodash');
 var moment = require('moment');
@@ -24,7 +26,10 @@ class ThemeSchedules extends React.Component {
   state = {
     scheduleList: [],
     selectedItems: [],
-    activeTheme: {}
+    selectedItem: {},
+    activeTheme: {},
+    modalActive: false,
+    modalContent: ""
   };
 
   componentDidMount() {
@@ -80,28 +85,27 @@ class ThemeSchedules extends React.Component {
                   renderItem={(item) => {
                     const {id, description, scheduleAt, deployed, backupId} = item;
 
-                    const shortcutActions = [
-                      {
-                        content: 'Delete schedule',
-                        onAction: () => this.shortcutDeleteSchedule(id),
-                      },
-                      {
-                        content: 'Revert backup',
-                        onAction: () => this.shortcutRevertBackup(backupId),
-                      },
-                    ];
-
                     return (
                       <ResourceItem
                         id={id}
                         accessibilityLabel={`Scheduled change description: ${description}`}
-                        shortcutActions={shortcutActions}
+                        verticalAlignment={"center"}
                       >
-                        <h3>
-                          <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
-                        </h3>
-                        <div>{description}</div>
-                        <div>Deployed: {deployed ? "Yes" : "No"}</div>
+                        <Stack alignment="center">
+                          <Stack.Item fill>
+                            <h3>
+                              <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
+                            </h3>
+                            <div>{description}</div>
+                            <div>Deployed: {deployed ? "Yes" : "No"}</div>
+                          </Stack.Item>
+                          <Stack.Item>
+                            <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
+                          </Stack.Item>
+                          <Stack.Item>
+                            <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
+                          </Stack.Item>
+                        </Stack>
                       </ResourceItem>
                     );
                   }}
@@ -126,6 +130,32 @@ class ThemeSchedules extends React.Component {
             </Layout.Section>
           }
         </Layout>
+
+        <div style={{height: '500px'}}>
+          <Modal
+            open={this.state.modalActive}
+            onClose={this.handleModalChange}
+            title="Confirm Action"
+            primaryAction={{
+              content: 'Confirm',
+              onAction: this.handleActionConfirmation
+            }}
+            secondaryActions={[
+              {
+                content: 'Cancel',
+                onAction: this.handleModalChange
+              },
+            ]}
+          >
+            <Modal.Section>
+              <TextContainer>
+                <p>
+                  {this.state.modalContent}
+                </p>
+              </TextContainer>
+            </Modal.Section>
+          </Modal>
+        </div>
       </Page>
     );
   }
@@ -139,6 +169,40 @@ class ThemeSchedules extends React.Component {
     console.log('submit state', this.state);
 
   };
+
+  handleActionConfirmation = () => {
+
+    const { selectedItem, selectedAction } = this.state;
+
+    if (selectedAction === "restoreBackup") {
+      this.shortcutRestoreBackup(selectedItem.backupId);
+    }
+
+    if (selectedAction === "deleteSchedule") {
+      this.shortcutDeleteSchedule(selectedItem.id);
+    }
+
+    this.setState({ modalActive: !this.state.modalActive });
+
+  };
+
+  handleModalChange = (action, item) => {
+
+    if (item) {
+      this.setState({ selectedItem: item });
+      this.setState({ selectedAction: action });
+    }
+
+    if (action === "restoreBackup") {
+      this.setState({ modalContent: "Confirm that you want to restore to this backup." });
+    }
+
+    if (action === "deleteSchedule") {
+      this.setState({ modalContent: "Confirm that you want to delete to this schedule." });
+    }
+
+    this.setState({ modalActive: !this.state.modalActive });
+  }
 
   shortcutDeleteSchedule = (scheduleId) => {
     const { scheduleList } = this.state;
@@ -197,7 +261,7 @@ class ThemeSchedules extends React.Component {
     return true;
   }
 
-  shortcutRevertBackup = async (backupId) => {
+  shortcutRestoreBackup = async (backupId) => {
     console.log('revert backup for: ', backupId);
 
     const response = await this.getThemeList()
