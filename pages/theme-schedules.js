@@ -99,7 +99,7 @@ class ThemeSchedules extends React.Component {
                             <div>Deployed: {deployed ? "Yes" : "No"}</div>
                           </Stack.Item>
                           <Stack.Item>
-                            <Button onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
+                            <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
                           </Stack.Item>
                           <Stack.Item>
                             <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
