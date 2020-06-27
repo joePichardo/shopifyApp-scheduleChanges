@@ -98,6 +98,9 @@ class ThemeSchedules extends React.Component {
                             <div>Deployed: {deployed ? "Yes" : "No"}</div>
                           </Stack.Item>
                           <Stack.Item>
+                            <Button onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
+                          </Stack.Item>
+                          <Stack.Item>
                             <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
                           </Stack.Item>
                           <Stack.Item>
@@ -176,6 +179,10 @@ class ThemeSchedules extends React.Component {
       this.shortcutRestoreBackup(selectedItem.backupId);
     }
 
+    if (selectedAction === "deploySchedule") {
+      this.shortcutDeploySchedule(selectedItem);
+    }
+
     if (selectedAction === "deleteSchedule") {
       this.shortcutDeleteSchedule(selectedItem.id);
     }
@@ -195,11 +202,35 @@ class ThemeSchedules extends React.Component {
       this.setState({ modalContent: "Confirm that you want to restore to this backup." });
     }
 
+    if (action === "deploySchedule") {
+      this.setState({ modalContent: "Confirm that you want to deploy the scheduled change now." });
+    }
+
     if (action === "deleteSchedule") {
       this.setState({ modalContent: "Confirm that you want to delete to this schedule." });
     }
 
     this.setState({ modalActive: !this.state.modalActive });
+  }
+
+  shortcutDeploySchedule = async (scheduleItem) => {
+
+    const asset = {
+      key: scheduleItem.fileKey,
+      value: scheduleItem.fileValue
+    }
+
+    const response = await this.updateThemeFile(asset)
+      .then(json => {
+
+        this.setState({
+          scheduleList: this.state.scheduleList.map(el => (el.id === scheduleItem.id ? {...el, deployed: true} : el))
+        });
+
+        return json;
+      })
+      .catch(error => alert(error));
+
   }
 
   shortcutDeleteSchedule = (scheduleId) => {
