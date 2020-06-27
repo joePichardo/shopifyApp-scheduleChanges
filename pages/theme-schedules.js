@@ -80,12 +80,13 @@ class ThemeSchedules extends React.Component {
                   selectable
                   selectedItems={this.state.selectedItems}
                   onSelectionChange={this.setSelectedItems}
-                  renderItem={(item) => {
+                  renderItem={(item, index) => {
                     const {id, description, scheduleAt, deployed, backupId} = item;
 
                     return (
                       <ResourceItem
                         id={id}
+                        key={deployed && index}
                         accessibilityLabel={`Scheduled change description: ${description}`}
                         verticalAlignment={"center"}
                       >
