@@ -17,7 +17,9 @@ import {
   Modal,
   Filters,
   ChoiceList,
-  TextContainer
+  TextContainer,
+  Toast,
+  Frame
 } from '@shopify/polaris';
 var _ = require('lodash');
 var moment = require('moment');
@@ -33,7 +35,11 @@ class ThemeSchedules extends React.Component {
     modalActive: false,
     modalContent: "",
     deployedStatus: null,
-    pageQuery: 1
+    pageQuery: 1,
+    textQuery: "",
+    toastActive: false,
+    toastContent: "",
+    toastError: false
   };
 
   componentDidMount() {
@@ -41,6 +47,12 @@ class ThemeSchedules extends React.Component {
   }
 
   render() {
+
+    const { toastActive, toastContent, toastError } = this.state;
+
+    const toastMarkup = toastActive ? (
+      <Toast content={toastContent} error={toastError} onDismiss={this.toggleToastActive} />
+    ) : null;
 
     const bulkActions = [
       {
@@ -82,10 +94,24 @@ class ThemeSchedules extends React.Component {
 
     const filterControl = (
       <Filters
-        queryValue=""
         filters={filters}
         appliedFilters={appliedFilters}
-      />
+        focused={false}
+        queryPlaceholder={"Search schedules by description"}
+        queryValue={this.state.textQuery}
+        onQueryChange={this.onQueryChange}
+        onQueryClear={this.onQueryClear}
+        onClearAll={this.onClearAll}
+      >
+        <div style={{paddingLeft: '8px'}}>
+          <Button
+            primary
+            onClick={this.searchByDescriptions}
+          >
+            Search Descriptions
+          </Button>
+        </div>
+      </Filters>
     );
 
     const emptyStateScheduleList =
@@ -190,6 +216,9 @@ class ThemeSchedules extends React.Component {
             </Modal.Section>
           </Modal>
         </div>
+        <Frame>
+          {toastMarkup}
+        </Frame>
       </Page>
     );
   }
@@ -479,6 +508,39 @@ class ThemeSchedules extends React.Component {
     }
   }
 
+  onQueryChange = (queryValue) => {
+    this.setState({
+      textQuery: queryValue,
+    });
+  }
+
+  onQueryClear = () => {
+    this.setState({
+      textQuery: "",
+    });
+  }
+
+  onClearAll = () => {
+    this.setState({
+      textQuery: "",
+    });
+  }
+
+  searchByDescriptions = () => {
+    if (this.state.textQuery === "") {
+      this.setState({
+        toastActive: !this.state.toastActive,
+        toastContent: "Enter text into search field",
+        toastError: true
+      });
+    }
+  }
+
+  toggleToastActive = () => {
+    this.setState({
+      toastActive: !this.state.toastActive,
+    });
+  }
 
   fetchScheduleList = () => {
 
