@@ -15,6 +15,8 @@ import {
   ResourceItem,
   Pagination,
   Modal,
+  Filters,
+  ChoiceList,
   TextContainer
 } from '@shopify/polaris';
 var _ = require('lodash');
@@ -29,26 +31,13 @@ class ThemeSchedules extends React.Component {
     selectedItem: {},
     activeTheme: {},
     modalActive: false,
-    modalContent: ""
+    modalContent: "",
+    deployedStatus: null,
+    pageQuery: 1
   };
 
   componentDidMount() {
-
-    const fetchURL = `/api/themes/schedules`;
-    const options = {
-      method: 'GET'
-    };
-
-    fetch(fetchURL, options)
-      .then(response => response.json())
-      .then(({themeSchedules}) => {
-
-        this.setState({
-          scheduleList: themeSchedules,
-        });
-      })
-      .catch(error => alert(error));
-
+    this.fetchScheduleList();
   }
 
   render() {
@@ -60,77 +49,120 @@ class ThemeSchedules extends React.Component {
       },
     ];
 
+    const filters = [
+      {
+        key: 'deployedStatus',
+        label: 'Deployed status',
+        filter: (
+          <ChoiceList
+            title="Account status"
+            titleHidden
+            choices={[
+              {label: 'Deployed', value: 'yes'},
+            ]}
+            selected={this.state.deployedStatus || []}
+            onChange={this.handleDeployedStatusChange}
+            allowMultiple
+          />
+        ),
+        shortcut: true,
+      }
+    ];
+
+    const appliedFilters = [];
+
+    if(!_.isEmpty(this.state.deployedStatus)) {
+      const key = "deployedStatus";
+      appliedFilters.push({
+        key,
+        label: this.disambiguateLabel(key, this.state.deployedStatus),
+        onRemove: this.handleDeployedStatusRemove
+      })
+    }
+
+    const filterControl = (
+      <Filters
+        queryValue=""
+        filters={filters}
+        appliedFilters={appliedFilters}
+      />
+    );
+
+    const emptyStateScheduleList =
+      !this.state.scheduleList.length ? (
+        <EmptyState
+          heading="Schedule a theme change to get started"
+          action={{content: 'Schedule Theme Changes'}}
+          image={img}
+        >
+          <p>Use theme commands page to schedule new changes to your website. Return here to view your scheduled changes.</p>
+        </EmptyState>
+      ) : undefined;
+
     return (
       <Page>
         <Layout>
-          {_.isEmpty(this.state.scheduleList) ?
-            <EmptyState
-              heading="Schedule changes to start"
-              image={img}
-            >
-              <p>Use theme commands page to schedule new changes to your website. Return here to view your scheduled changes.</p>
-            </EmptyState>
-            :
-            <Layout.Section>
-              <Card>
-                <ResourceList
-                  resourceName={{singular: 'schedule', plural: 'schedules'}}
-                  items={this.state.scheduleList}
-                  bulkActions={bulkActions}
-                  selectable
-                  selectedItems={this.state.selectedItems}
-                  onSelectionChange={this.setSelectedItems}
-                  renderItem={(item, index) => {
-                    const {id, description, scheduleAt, deployed, backupId} = item;
+          <Layout.Section>
+            <Card>
+              <ResourceList
+                emptyState={emptyStateScheduleList}
+                filterControl={filterControl}
+                resourceName={{singular: 'schedule', plural: 'schedules'}}
+                items={this.state.scheduleList}
+                bulkActions={bulkActions}
+                selectable
+                selectedItems={this.state.selectedItems}
+                onSelectionChange={this.setSelectedItems}
+                renderItem={(item, index) => {
+                  const {id, description, scheduleAt, deployed, backupId} = item;
 
-                    return (
-                      <ResourceItem
-                        id={id}
-                        key={deployed && index}
-                        accessibilityLabel={`Scheduled change description: ${description}`}
-                        verticalAlignment={"center"}
-                      >
-                        <Stack alignment="center">
-                          <Stack.Item fill>
-                            <h3>
-                              <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
-                            </h3>
-                            <div>{description}</div>
-                            <div>Deployed: {deployed ? "Yes" : "No"}</div>
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
-                          </Stack.Item>
-                        </Stack>
-                      </ResourceItem>
-                    );
-                  }}
-                />
-              </Card>
-              <div style={{height: '100px', marginTop: '15px'}}>
-                <Pagination
-                  hasPrevious
-                  previousKeys={[74]}
-                  previousTooltip="j"
-                  onPrevious={() => {
-                    console.log('Previous');
-                  }}
-                  hasNext
-                  nextKeys={[75]}
-                  nextTooltip="k"
-                  onNext={() => {
-                    console.log('Next');
-                  }}
-                />
-              </div>
-            </Layout.Section>
-          }
+                  return (
+                    <ResourceItem
+                      id={id}
+                      key={deployed && index}
+                      accessibilityLabel={`Scheduled change description: ${description}`}
+                      verticalAlignment={"center"}
+                    >
+                      <Stack alignment="center">
+                        <Stack.Item fill>
+                          <h3>
+                            <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
+                          </h3>
+                          <div>{description}</div>
+                          <div>Deployed: {deployed ? "Yes" : "No"}</div>
+                        </Stack.Item>
+                        <Stack.Item>
+                          <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
+                        </Stack.Item>
+                        <Stack.Item>
+                          <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
+                        </Stack.Item>
+                        <Stack.Item>
+                          <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
+                        </Stack.Item>
+                      </Stack>
+                    </ResourceItem>
+                  );
+                }}
+              />
+            </Card>
+            <div style={{height: '100px', marginTop: '15px'}}>
+              <Pagination
+                hasPrevious={this.state.pageQuery > 1}
+                previousKeys={[74]}
+                previousTooltip="j"
+                onPrevious={() => {
+                  this.handlePreviousPage();
+                }}
+                hasNext={this.state.scheduleList.length > 1}
+                nextKeys={[75]}
+                nextTooltip="k"
+                onNext={() => {
+                  this.handleNextPage();
+                }}
+              />
+            </div>
+          </Layout.Section>
         </Layout>
 
         <div style={{height: '500px'}}>
@@ -408,6 +440,77 @@ class ThemeSchedules extends React.Component {
         .catch(error => alert(error));
     }
 
+  }
+
+  handleDeployedStatusChange = (value) => {
+    console.log('change value', value)
+    this.setState({ deployedStatus: value, }, () => {
+      this.fetchScheduleList();
+    });
+  }
+
+  handleDeployedStatusRemove = (value) => {
+    console.log('remove value', value)
+    this.setState({ deployedStatus: value, }, () => {
+      this.fetchScheduleList();
+    });
+  }
+
+  disambiguateLabel = (key, value) => {
+    switch (key) {
+      case 'deployedStatus':
+        return `Deployed: ${value}`
+      default:
+        return value;
+    }
+  }
+
+  handlePreviousPage = () => {
+    if (this.state.pageQuery > 1) {
+      this.setState({ pageQuery: this.state.pageQuery - 1 }, () => {
+        this.fetchScheduleList();
+      });
+    }
+  }
+
+  handleNextPage = () => {
+    if (this.state.scheduleList.length >= 1) {
+      this.setState({ pageQuery: this.state.pageQuery + 1 }, () => {
+        this.fetchScheduleList();
+      });
+    }
+  }
+
+
+  fetchScheduleList = () => {
+
+    let deployed = "no";
+
+    if (this.state.deployedStatus != null) {
+      if (this.state.deployedStatus.length > 0) {
+        deployed = "yes";
+      }
+    }
+
+    let page = this.state.pageQuery;
+
+    let fetchURL = `/api/themes/schedules?page=${page}&deployed=${deployed}`;
+
+    console.log('fetchURL', fetchURL);
+
+    const options = {
+      method: 'GET'
+    };
+
+    fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(({themeSchedules}) => {
+
+        this.setState({
+          scheduleList: themeSchedules,
+        });
+      })
+      .catch(error => alert(error));
   }
 
 }
