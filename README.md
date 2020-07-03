@@ -16,8 +16,6 @@ To start server
 - Add button and function to make a backup of settings
 
 - Show a list of scheduled changes
-    - Show history of deployed scheduled change
-    - make pagination for scheduled changes
     - add search function with date ranges
     
 - Add notifications
