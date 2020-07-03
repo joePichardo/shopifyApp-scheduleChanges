@@ -443,15 +443,13 @@ class ThemeSchedules extends React.Component {
   }
 
   handleDeployedStatusChange = (value) => {
-    console.log('change value', value)
     this.setState({ deployedStatus: value, }, () => {
       this.fetchScheduleList();
     });
   }
 
-  handleDeployedStatusRemove = (value) => {
-    console.log('remove value', value)
-    this.setState({ deployedStatus: value, }, () => {
+  handleDeployedStatusRemove = () => {
+    this.setState({ deployedStatus: null, }, () => {
       this.fetchScheduleList();
     });
   }
@@ -495,8 +493,6 @@ class ThemeSchedules extends React.Component {
     let page = this.state.pageQuery;
 
     let fetchURL = `/api/themes/schedules?page=${page}&deployed=${deployed}`;
-
-    console.log('fetchURL', fetchURL);
 
     const options = {
       method: 'GET'
