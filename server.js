@@ -184,9 +184,25 @@ app.prepare().then(() => {
   router.get('/api/themes/schedules', async (ctx) => {
     const { shop, accessToken } = ctx.session;
 
+    let page = 1;
+    if (ctx.request.query.page) {
+      page = ctx.request.query.page;
+    }
+
+    if (page < 1) {
+      page = 1;
+    }
+
+    let deployed = "no";
+    if (ctx.request.query.deployed) {
+      if (ctx.request.query.deployed === "yes" || ctx.request.query.deployed === "no") {
+        deployed = ctx.request.query.deployed;
+      }
+    }
+
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/schedules`, {
+      const response = await fetch(`http://localhost:3001/theme/schedules?page=${page}&deployed=${deployed}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
