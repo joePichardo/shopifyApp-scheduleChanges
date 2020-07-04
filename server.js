@@ -200,9 +200,14 @@ app.prepare().then(() => {
       }
     }
 
+    let description = "";
+    if (ctx.request.query.description) {
+      description = ctx.request.query.description;
+    }
+
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/schedules?page=${page}&deployed=${deployed}`, {
+      const response = await fetch(`http://localhost:3001/theme/schedules?page=${page}&deployed=${deployed}&description=${description}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
