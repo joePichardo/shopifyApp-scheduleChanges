@@ -39,7 +39,8 @@ class ThemeSchedules extends React.Component {
     descriptionQuery: "",
     toastActive: false,
     toastContent: "",
-    toastError: false
+    toastError: false,
+    loadingSchedules: false
   };
 
   componentDidMount() {
@@ -67,7 +68,7 @@ class ThemeSchedules extends React.Component {
         label: 'Deployed status',
         filter: (
           <ChoiceList
-            title="Account status"
+            title="Deployed status"
             titleHidden
             choices={[
               {label: 'Deployed', value: 'yes'},
@@ -102,10 +103,12 @@ class ThemeSchedules extends React.Component {
         onQueryChange={this.onQueryChange}
         onQueryClear={this.onQueryClear}
         onClearAll={this.onClearAll}
+        disabled={this.state.loadingSchedules}
       >
         <div style={{paddingLeft: '8px'}}>
           <Button
             primary
+            disabled={this.state.loadingSchedules}
             onClick={this.searchByDescriptions}
           >
             Search Descriptions
@@ -131,6 +134,7 @@ class ThemeSchedules extends React.Component {
           <Layout.Section>
             <Card>
               <ResourceList
+                loading={this.state.loadingSchedules}
                 emptyState={emptyStateScheduleList}
                 filterControl={filterControl}
                 resourceName={{singular: 'schedule', plural: 'schedules'}}
@@ -277,41 +281,45 @@ class ThemeSchedules extends React.Component {
 
   shortcutDeploySchedule = async (scheduleItem) => {
 
-    const asset = {
-      key: scheduleItem.fileKey,
-      value: scheduleItem.fileValue
-    }
+    this.setState({ loadingSchedules: true }, async () => {
+      const asset = {
+        key: scheduleItem.fileKey,
+        value: scheduleItem.fileValue
+      }
 
-    const response = await this.getThemeList()
-      .then(json => {
-        return this.findCurrentThemes(json);
-      }).then(themesFound => {
+      const response = await this.getThemeList()
+        .then(json => {
+          return this.findCurrentThemes(json);
+        }).then(themesFound => {
 
-        if (!themesFound) {
-          throw new Error('Did not find current themes');
-        }
+          if (!themesFound) {
+            throw new Error('Did not find current themes');
+          }
 
-        return this.updateThemeFile(asset);
-      })
-      .then(json => {
+          return this.updateThemeFile(asset);
+        })
+        .then(json => {
 
-        let updatedScheduleItem = {
-          id: scheduleItem.id,
-          ownerId: scheduleItem.ownerId,
-          deployed: true
-        };
+          let updatedScheduleItem = {
+            id: scheduleItem.id,
+            ownerId: scheduleItem.ownerId,
+            deployed: true
+          };
 
-        this.setState({
-          scheduleList: this.state.scheduleList.map(el => (el.id === scheduleItem.id ? {...el, deployed: true} : el))
+          this.setState({
+            scheduleList: this.state.scheduleList.map(el => (el.id === scheduleItem.id ? {...el, deployed: true} : el))
+          });
+
+          return this.updateSchedule(updatedScheduleItem);
+        })
+        .then(response => {
+          this.fetchSuccess("Successfully deployed!")
+          return response;
+        })
+        .catch(error => {
+          this.fetchFailed(error);
         });
-
-
-        return this.updateSchedule(updatedScheduleItem);
-      })
-      .then(response => {
-        return response
-      })
-      .catch(error => alert(error));
+    });
 
   }
 
@@ -328,32 +336,41 @@ class ThemeSchedules extends React.Component {
       .then(json => {
         return json;
       })
-      .catch(error => alert(error));
+      .catch(error => {
+        return error;
+      });
   }
 
   shortcutDeleteSchedule = (scheduleId) => {
-    const { scheduleList } = this.state;
 
-    const data = {
-      scheduleId: scheduleId
-    }
+    this.setState({ loadingSchedules: true },  () => {
+      const { scheduleList } = this.state;
 
-    const fetchURL = `/api/themes/schedule/delete`;
-    const options = {
-      method: 'POST',
-      body: JSON.stringify(data)
-    };
+      const data = {
+        scheduleId: scheduleId
+      }
 
-    fetch(fetchURL, options)
-      .then(response => response.json())
-      .then(json => {
+      const fetchURL = `/api/themes/schedule/delete`;
+      const options = {
+        method: 'POST',
+        body: JSON.stringify(data)
+      };
 
-        const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
-        this.setState({ scheduleList: newScheduleList });
+      fetch(fetchURL, options)
+        .then(response => response.json())
+        .then(json => {
 
-        return json;
-      })
-      .catch(error => alert(error));
+          const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
+          this.setState({ scheduleList: newScheduleList });
+
+          this.fetchSuccess("Successfully deleted schedule!");
+
+          return json;
+        })
+        .catch(error => {
+          this.fetchFailed(error);
+        });
+    });
   }
 
   getThemeList = () => {
@@ -365,7 +382,9 @@ class ThemeSchedules extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        return error;
+      });
   }
 
   findCurrentThemes = (json) => {
@@ -389,25 +408,32 @@ class ThemeSchedules extends React.Component {
 
   shortcutRestoreBackup = async (backupId) => {
 
-    const response = await this.getThemeList()
-      .then(json => {
-        return this.findCurrentThemes(json);
-      }).then(themesFound => {
+    this.setState({ loadingSchedules: true }, async () => {
+      const response = await this.getThemeList()
+        .then(json => {
+          return this.findCurrentThemes(json);
+        }).then(themesFound => {
 
-        if (!themesFound) {
-          throw new Error('Did not find current themes');
-        }
+          if (!themesFound) {
+            throw new Error('Did not find current themes');
+          }
 
-        return this.getBackupThemeFile(backupId);
-      }).then(json => {
-        const asset = {
-          key: json.data.themeBackup.fileKey,
-          value: json.data.themeBackup.fileValue
-        }
+          return this.getBackupThemeFile(backupId);
+        }).then(json => {
+          const asset = {
+            key: json.data.themeBackup.fileKey,
+            value: json.data.themeBackup.fileValue
+          }
 
-        return this.updateThemeFile(asset);
-      })
-      .catch(error => alert(error));
+          return this.updateThemeFile(asset);
+        }).then(response => {
+          this.fetchSuccess("Successfully restored backup!")
+          return response;
+        })
+        .catch(error => {
+          this.fetchFailed(error);
+        });
+    });
 
   }
 
@@ -416,7 +442,9 @@ class ThemeSchedules extends React.Component {
       method: 'GET',
     }).then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        return error;
+      });
   }
 
   updateThemeFile = (asset) => {
@@ -430,7 +458,9 @@ class ThemeSchedules extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        return error;
+      });
   }
 
   setSelectedItems = (items) => {
@@ -442,32 +472,45 @@ class ThemeSchedules extends React.Component {
 
   deleteThemeSchedules = () => {
 
-    const { selectedItems, scheduleList } = this.state;
+    this.setState({ loadingSchedules: true }, () => {
+      const { selectedItems, scheduleList } = this.state;
+      let errorCounter = 0;
 
-    for (var i = 0; i < selectedItems.length; i++) {
+      for (var i = 0; i < selectedItems.length; i++) {
 
-      const data = {
-        scheduleId: selectedItems[i]
+        const data = {
+          scheduleId: selectedItems[i]
+        }
+
+        const fetchURL = `/api/themes/schedule/delete`;
+        const options = {
+          method: 'POST',
+          body: JSON.stringify(data)
+        };
+
+        fetch(fetchURL, options)
+          .then(response => response.json())
+          .then(json => {
+
+            const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
+            this.setState({
+              scheduleList: newScheduleList
+            });
+
+            return json;
+          })
+          .catch(error => {
+            errorCounter += 1;
+            return error;
+          });
       }
 
-
-      const fetchURL = `/api/themes/schedule/delete`;
-      const options = {
-        method: 'POST',
-        body: JSON.stringify(data)
-      };
-
-      fetch(fetchURL, options)
-        .then(response => response.json())
-        .then(json => {
-
-          const newScheduleList = scheduleList.filter(schedule => schedule.id !== data.scheduleId);
-          this.setState({ scheduleList: newScheduleList });
-
-          return json;
-        })
-        .catch(error => alert(error));
-    }
+      if (errorCounter > 0) {
+        this.fetchFailed(`Failed to delete ${errorCounter} schedules`);
+      } else {
+        this.fetchSuccess("Successfully deleted all schedules");
+      }
+    });
 
   }
 
@@ -528,14 +571,18 @@ class ThemeSchedules extends React.Component {
 
   searchByDescriptions = () => {
     if (this.state.descriptionQuery === "") {
-      this.setState({
-        toastActive: !this.state.toastActive,
-        toastContent: "Enter text into search field",
-        toastError: true
-      });
+      this.showToast("Enter text into search field", true);
     } else {
       this.fetchScheduleList();
     }
+  }
+
+  showToast = (text, error) => {
+    this.setState({
+      toastActive: !this.state.toastActive,
+      toastContent: text,
+      toastError: error
+    });
   }
 
   toggleToastActive = () => {
@@ -564,15 +611,36 @@ class ThemeSchedules extends React.Component {
       method: 'GET'
     };
 
-    fetch(fetchURL, options)
-      .then(response => response.json())
-      .then(({themeSchedules}) => {
+    this.setState({ loadingSchedules: true }, () => {
+      fetch(fetchURL, options)
+        .then(response => response.json())
+        .then(({themeSchedules}) => {
 
-        this.setState({
-          scheduleList: themeSchedules,
+          this.setState({
+            loadingSchedules: false,
+            scheduleList: themeSchedules,
+          });
+
+        })
+        .catch(error => {
+          this.fetchFailed(error);
         });
-      })
-      .catch(error => alert(error));
+    });
+
+  }
+
+  fetchFailed = (error) => {
+    this.setState({
+      loadingSchedules: false
+    });
+    this.showToast(error, true);
+  }
+
+  fetchSuccess = (message) => {
+    this.setState({
+      loadingSchedules: false
+    });
+    this.showToast(message, false);
   }
 
 }
