@@ -36,7 +36,7 @@ class ThemeSchedules extends React.Component {
     modalContent: "",
     deployedStatus: null,
     pageQuery: 1,
-    textQuery: "",
+    descriptionQuery: "",
     toastActive: false,
     toastContent: "",
     toastError: false
@@ -98,7 +98,7 @@ class ThemeSchedules extends React.Component {
         appliedFilters={appliedFilters}
         focused={false}
         queryPlaceholder={"Search schedules by description"}
-        queryValue={this.state.textQuery}
+        queryValue={this.state.descriptionQuery}
         onQueryChange={this.onQueryChange}
         onQueryClear={this.onQueryClear}
         onClearAll={this.onClearAll}
@@ -510,29 +510,31 @@ class ThemeSchedules extends React.Component {
 
   onQueryChange = (queryValue) => {
     this.setState({
-      textQuery: queryValue,
+      descriptionQuery: queryValue,
     });
   }
 
   onQueryClear = () => {
-    this.setState({
-      textQuery: "",
+    this.setState({ descriptionQuery: "" }, () => {
+      this.fetchScheduleList();
     });
   }
 
   onClearAll = () => {
-    this.setState({
-      textQuery: "",
+    this.setState({ descriptionQuery: "" }, () => {
+      this.fetchScheduleList();
     });
   }
 
   searchByDescriptions = () => {
-    if (this.state.textQuery === "") {
+    if (this.state.descriptionQuery === "") {
       this.setState({
         toastActive: !this.state.toastActive,
         toastContent: "Enter text into search field",
         toastError: true
       });
+    } else {
+      this.fetchScheduleList();
     }
   }
 
@@ -554,7 +556,9 @@ class ThemeSchedules extends React.Component {
 
     let page = this.state.pageQuery;
 
-    let fetchURL = `/api/themes/schedules?page=${page}&deployed=${deployed}`;
+    let description = this.state.descriptionQuery;
+
+    let fetchURL = `/api/themes/schedules?page=${page}&deployed=${deployed}&description=${description}`;
 
     const options = {
       method: 'GET'
