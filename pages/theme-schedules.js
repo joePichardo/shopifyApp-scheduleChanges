@@ -129,73 +129,72 @@ class ThemeSchedules extends React.Component {
       ) : undefined;
 
     return (
-      <Page>
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <ResourceList
-                loading={this.state.loadingSchedules}
-                emptyState={emptyStateScheduleList}
-                filterControl={filterControl}
-                resourceName={{singular: 'schedule', plural: 'schedules'}}
-                items={this.state.scheduleList}
-                bulkActions={bulkActions}
-                selectable
-                selectedItems={this.state.selectedItems}
-                onSelectionChange={this.setSelectedItems}
-                renderItem={(item, index) => {
-                  const {id, description, scheduleAt, deployed, backupId} = item;
+      <Frame>
+        <Page>
+          <Layout>
+            <Layout.Section>
+              <Card>
+                <ResourceList
+                  loading={this.state.loadingSchedules}
+                  emptyState={emptyStateScheduleList}
+                  filterControl={filterControl}
+                  resourceName={{singular: 'schedule', plural: 'schedules'}}
+                  items={this.state.scheduleList}
+                  bulkActions={bulkActions}
+                  selectable
+                  selectedItems={this.state.selectedItems}
+                  onSelectionChange={this.setSelectedItems}
+                  renderItem={(item, index) => {
+                    const {id, description, scheduleAt, deployed, backupId} = item;
 
-                  return (
-                    <ResourceItem
-                      id={id}
-                      key={deployed && index}
-                      accessibilityLabel={`Scheduled change description: ${description}`}
-                      verticalAlignment={"center"}
-                    >
-                      <Stack alignment="center">
-                        <Stack.Item fill>
-                          <h3>
-                            <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
-                          </h3>
-                          <div>{description}</div>
-                          <div>Deployed: {deployed ? "Yes" : "No"}</div>
-                        </Stack.Item>
-                        <Stack.Item>
-                          <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
-                        </Stack.Item>
-                        <Stack.Item>
-                          <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
-                        </Stack.Item>
-                        <Stack.Item>
-                          <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
-                        </Stack.Item>
-                      </Stack>
-                    </ResourceItem>
-                  );
-                }}
-              />
-            </Card>
-            <div style={{height: '100px', marginTop: '15px'}}>
-              <Pagination
-                hasPrevious={this.state.pageQuery > 1}
-                previousKeys={[74]}
-                previousTooltip="j"
-                onPrevious={() => {
-                  this.handlePreviousPage();
-                }}
-                hasNext={this.state.scheduleList.length > 9}
-                nextKeys={[75]}
-                nextTooltip="k"
-                onNext={() => {
-                  this.handleNextPage();
-                }}
-              />
-            </div>
-          </Layout.Section>
-        </Layout>
-
-        <div style={{height: '500px'}}>
+                    return (
+                      <ResourceItem
+                        id={id}
+                        key={deployed && index}
+                        accessibilityLabel={`Scheduled change description: ${description}`}
+                        verticalAlignment={"center"}
+                      >
+                        <Stack alignment="center">
+                          <Stack.Item fill>
+                            <h3>
+                              <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
+                            </h3>
+                            <div>{description}</div>
+                            <div>Deployed: {deployed ? "Yes" : "No"}</div>
+                          </Stack.Item>
+                          <Stack.Item>
+                            <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
+                          </Stack.Item>
+                          <Stack.Item>
+                            <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
+                          </Stack.Item>
+                          <Stack.Item>
+                            <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
+                          </Stack.Item>
+                        </Stack>
+                      </ResourceItem>
+                    );
+                  }}
+                />
+              </Card>
+              <div style={{height: '100px', marginTop: '15px'}}>
+                <Pagination
+                  hasPrevious={this.state.pageQuery > 1}
+                  previousKeys={[74]}
+                  previousTooltip="j"
+                  onPrevious={() => {
+                    this.handlePreviousPage();
+                  }}
+                  hasNext={this.state.scheduleList.length > 9}
+                  nextKeys={[75]}
+                  nextTooltip="k"
+                  onNext={() => {
+                    this.handleNextPage();
+                  }}
+                />
+              </div>
+            </Layout.Section>
+          </Layout>
           <Modal
             open={this.state.modalActive}
             onClose={this.handleModalChange}
@@ -219,11 +218,9 @@ class ThemeSchedules extends React.Component {
               </TextContainer>
             </Modal.Section>
           </Modal>
-        </div>
-        <Frame>
           {toastMarkup}
-        </Frame>
-      </Page>
+        </Page>
+      </Frame>
     );
   }
 
