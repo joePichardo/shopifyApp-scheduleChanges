@@ -17,11 +17,6 @@ To start server
 
 - Show a list of scheduled changes
     - add search function with date ranges
-    
-- Add notifications
-    - Add a loading spinner when fetching (loading button state,)
-    - Add a success banner on success
-    - Add an error banner on error
 
 - Add a cron function to deploy scheduled changes
     - Use an api call every 15 minutes to check schedule table and perform the theme change
