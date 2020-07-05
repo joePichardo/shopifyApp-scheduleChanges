@@ -184,7 +184,7 @@ class ThemeSchedules extends React.Component {
                 onPrevious={() => {
                   this.handlePreviousPage();
                 }}
-                hasNext={this.state.scheduleList.length > 1}
+                hasNext={this.state.scheduleList.length > 9}
                 nextKeys={[75]}
                 nextTooltip="k"
                 onNext={() => {
