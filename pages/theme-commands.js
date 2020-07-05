@@ -10,12 +10,18 @@ import {
   TextField,
   TextStyle,
   DatePicker,
-  Select
+  Select,
+  Frame,
+  Toast
 } from '@shopify/polaris';
 var _ = require('lodash');
 
 class ThemeCommands extends React.Component {
   state = {
+    toastActive: false,
+    toastContent: "",
+    toastError: false,
+    loadingScheduleSubmit: false,
     activeTheme: {},
     stagingThemeName: 'Staging-Debut',
     stagingTheme: {},
@@ -60,6 +66,13 @@ class ThemeCommands extends React.Component {
   };
 
   render() {
+
+    const { toastActive, toastContent, toastError } = this.state;
+
+    const toastMarkup = toastActive ? (
+      <Toast content={toastContent} error={toastError} onDismiss={this.toggleToastActive} />
+    ) : null;
+
     const { stagingThemeName, selectedDate, minuteOptions, hourOptions, selectedMinute, selectedHour, scheduleDescription } = this.state;
     const today = new Date()
     const yesterday = new Date(today)
@@ -67,91 +80,94 @@ class ThemeCommands extends React.Component {
     yesterday.setDate(yesterday.getDate() - 1)
 
     return (
-      <Page>
-        <Layout>
-          <Layout.AnnotatedSection
-            title="Name of theme to update from"
-            description="Copy your theme and rename it. This is the theme where you will be updating from. We recommended renaming duplicated them with 'Staging-' as a prefix. * Make sure the name is unique from other themes *"
-          >
-            <Card sectioned>
-              <Form onSubmit={this.handleSubmit}>
+      <Frame>
+        <Page>
+          <Layout>
+            <Layout.AnnotatedSection
+              title="Name of theme to update from"
+              description="Copy your theme and rename it. This is the theme where you will be updating from. We recommended renaming duplicated them with 'Staging-' as a prefix. * Make sure the name is unique from other themes *"
+            >
+              <Card sectioned>
+                <Form onSubmit={this.handleSubmit}>
+                  <FormLayout>
+                    <TextField
+                      value={stagingThemeName}
+                      onChange={this.handleChange('stagingThemeName')}
+                      label="Theme Name"
+                      type="text"
+                    />
+                    <Stack distribution="trailing">
+                      <Button primary submit>
+                        Save
+                      </Button>
+                    </Stack>
+                  </FormLayout>
+                </Form>
+              </Card>
+            </Layout.AnnotatedSection>
+            <Layout.AnnotatedSection
+              title="Schedule a date and time for the settings to be changed/updated"
+              description="Make sure you have reviewed your changes before scheduling a change. Your staging theme will be saved in it's current state and updated at the scheduled time."
+            >
+              <Card sectioned>
+                <Form onSubmit={this.handleScheduleSubmit}>
+                  <FormLayout>
+                    <DatePicker
+                      month={this.state.selectedMonth}
+                      onMonthChange={this.handleChange('selectedMonth')}
+                      year={this.state.selectedYear}
+                      onChange={this.handleChange('selectedDate')}
+                      selected={selectedDate}
+                      allowRange={false}
+                      disableDatesBefore={yesterday}
+                    />
+                    <FormLayout.Group>
+                      <Select
+                        label="Hour"
+                        options={hourOptions}
+                        onChange={this.handleChange('selectedHour')}
+                        value={selectedHour}
+                      />
+                      <Select
+                        label="Minute"
+                        options={minuteOptions}
+                        onChange={this.handleChange('selectedMinute')}
+                        value={selectedMinute}
+                      />
+                    </FormLayout.Group>
+                    <TextField
+                      value={scheduleDescription}
+                      onChange={this.handleChange('scheduleDescription')}
+                      label="Scheduled change description"
+                      type="text"
+                    />
+                    <Stack distribution="trailing">
+                      <Button primary loading={this.state.loadingScheduleSubmit} submit>
+                        Save
+                      </Button>
+                    </Stack>
+                  </FormLayout>
+                </Form>
+              </Card>
+            </Layout.AnnotatedSection>
+            <Layout.AnnotatedSection
+              title="Update Now"
+              description="Update changes on your staging theme to the live theme."
+            >
+              <Form onSubmit={this.handleThemeUpdate}>
                 <FormLayout>
-                  <TextField
-                    value={stagingThemeName}
-                    onChange={this.handleChange('stagingThemeName')}
-                    label="Theme Name"
-                    type="text"
-                  />
                   <Stack distribution="trailing">
                     <Button primary submit>
-                      Save
+                      Update Theme Now
                     </Button>
                   </Stack>
                 </FormLayout>
               </Form>
-            </Card>
-          </Layout.AnnotatedSection>
-          <Layout.AnnotatedSection
-            title="Schedule a date and time for the settings to be changed/updated"
-            description="Make sure you have reviewed your changes before scheduling a change. Your staging theme will be saved in it's current state and updated at the scheduled time."
-          >
-            <Card sectioned>
-              <Form onSubmit={this.handleScheduleSubmit}>
-                <FormLayout>
-                  <DatePicker
-                    month={this.state.selectedMonth}
-                    onMonthChange={this.handleChange('selectedMonth')}
-                    year={this.state.selectedYear}
-                    onChange={this.handleChange('selectedDate')}
-                    selected={selectedDate}
-                    allowRange={false}
-                    disableDatesBefore={yesterday}
-                  />
-                  <FormLayout.Group>
-                    <Select
-                      label="Hour"
-                      options={hourOptions}
-                      onChange={this.handleChange('selectedHour')}
-                      value={selectedHour}
-                    />
-                    <Select
-                      label="Minute"
-                      options={minuteOptions}
-                      onChange={this.handleChange('selectedMinute')}
-                      value={selectedMinute}
-                    />
-                  </FormLayout.Group>
-                  <TextField
-                    value={scheduleDescription}
-                    onChange={this.handleChange('scheduleDescription')}
-                    label="Scheduled change description"
-                    type="text"
-                  />
-                  <Stack distribution="trailing">
-                    <Button primary submit>
-                      Save
-                    </Button>
-                  </Stack>
-                </FormLayout>
-              </Form>
-            </Card>
-          </Layout.AnnotatedSection>
-          <Layout.AnnotatedSection
-            title="Update Now"
-            description="Update changes on your staging theme to the live theme."
-          >
-            <Form onSubmit={this.handleThemeUpdate}>
-              <FormLayout>
-                <Stack distribution="trailing">
-                  <Button primary submit>
-                    Update Theme Now
-                  </Button>
-                </Stack>
-              </FormLayout>
-            </Form>
-          </Layout.AnnotatedSection>
-        </Layout>
-      </Page>
+            </Layout.AnnotatedSection>
+          </Layout>
+          {toastMarkup}
+        </Page>
+      </Frame>
     );
   }
 
@@ -165,55 +181,65 @@ class ThemeCommands extends React.Component {
 
   handleScheduleSubmit = async () => {
 
-    const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute, scheduleDescription } = this.state;
+    this.setState({ loadingScheduleSubmit: true }, async () => {
+      const { selectedDate, selectedMonth, selectedYear, selectedHour, selectedMinute, scheduleDescription } = this.state;
 
-    var dateRetrieved, scheduleBackupId;
+      var dateRetrieved, scheduleBackupId;
 
-    if (selectedDate.start) {
-      dateRetrieved = selectedDate.start;
-    } else {
-      dateRetrieved = selectedDate;
-    }
+      if (selectedDate.start) {
+        dateRetrieved = selectedDate.start;
+      } else {
+        dateRetrieved = selectedDate;
+      }
 
 
-    var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
+      var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
 
-    const response = await this.getThemeList()
-      .then(json => {
-        return this.findCurrentThemes(json);
-      }).then(themesFound => {
+      const response = await this.getThemeList()
+        .then(json => {
+          return this.findCurrentThemes(json);
+        }).then(themesFound => {
 
-        if (!themesFound) {
-          throw new Error('Did not find current themes');
-        }
+          if (!themesFound) {
+            throw new Error('Did not find current themes');
+          }
 
-        return this.getThemeFileById(this.state.activeTheme.id);
-      }).then(json => {
-        const asset = {
-          key: json.data.asset.key,
-          value: json.data.asset.value
-        }
+          return this.getThemeFileById(this.state.activeTheme.id);
+        }).then(json => {
+          const asset = {
+            key: json.data.asset.key,
+            value: json.data.asset.value
+          }
 
-        return this.backupThemeFile({ themeId: json.data.themeId, data: asset });
-      }).then(({ data }) => {
+          return this.backupThemeFile({ themeId: json.data.themeId, data: asset });
+        }).then(({ data }) => {
 
-        scheduleBackupId = data.themeBackup.id;
+          scheduleBackupId = data.themeBackup.id;
 
-        return this.getThemeFileById(this.state.stagingTheme.id);
-      }).then(json => {
-        const asset = {
-          key: json.data.asset.key,
-          value: json.data.asset.value
-        }
+          return this.getThemeFileById(this.state.stagingTheme.id);
+        }).then(json => {
+          const asset = {
+            key: json.data.asset.key,
+            value: json.data.asset.value
+          }
 
-        return this.scheduleThemeFile({ date: scheduledDay.toISOString(), backupId: scheduleBackupId, asset, description: scheduleDescription });
-      }).then(() => {
-        this.setState({
-          scheduleDescription: ""
+          return this.scheduleThemeFile({ date: scheduledDay.toISOString(), backupId: scheduleBackupId, asset, description: scheduleDescription });
+        }).then(() => {
+          this.setState({
+            scheduleDescription: "",
+            loadingScheduleSubmit: false
+          });
+          this.fetchSuccess("Successfully scheduled change!")
+          return true;
+        })
+        .catch(error => {
+          this.setState({
+            loadingScheduleSubmit: false
+          });
+
+          this.fetchFailed(error)
         });
-        return true;
-      })
-      .catch(error => alert(error));
+    });
 
   };
 
@@ -338,6 +364,34 @@ class ThemeCommands extends React.Component {
   handleChange = (field) => {
     return (value) => this.setState({ [field]: value });
   };
+
+  showToast = (text, error) => {
+    this.setState({
+      toastActive: !this.state.toastActive,
+      toastContent: text,
+      toastError: error
+    });
+  }
+
+  toggleToastActive = () => {
+    this.setState({
+      toastActive: !this.state.toastActive,
+    });
+  }
+
+  fetchFailed = (error) => {
+    this.setState({
+      loadingSchedules: false
+    });
+    this.showToast(error, true);
+  }
+
+  fetchSuccess = (message) => {
+    this.setState({
+      loadingSchedules: false
+    });
+    this.showToast(message, false);
+  }
 
 }
 
