@@ -22,6 +22,7 @@ class ThemeCommands extends React.Component {
     toastContent: "",
     toastError: false,
     loadingScheduleSubmit: false,
+    loadingThemeUpdate: false,
     activeTheme: {},
     stagingThemeName: 'Staging-Debut',
     stagingTheme: {},
@@ -157,7 +158,7 @@ class ThemeCommands extends React.Component {
               <Form onSubmit={this.handleThemeUpdate}>
                 <FormLayout>
                   <Stack distribution="trailing">
-                    <Button primary submit>
+                    <Button loading={this.state.loadingThemeUpdate} primary submit>
                       Update Theme Now
                     </Button>
                   </Stack>
@@ -275,27 +276,39 @@ class ThemeCommands extends React.Component {
   }
 
   handleThemeUpdate = async () => {
-    console.log('handle theme update')
-    const { stagingThemeName } = this.state;
 
-    const response = await this.getThemeList()
-      .then(json => {
-        return this.findCurrentThemes(json);
-      }).then(themesFound => {
+    this.setState({ loadingThemeUpdate: true }, async () => {
+      const { stagingThemeName } = this.state;
 
-        if (!themesFound) {
-          throw new Error('Did not find current themes');
-        }
+      const response = await this.getThemeList()
+        .then(json => {
+          return this.findCurrentThemes(json);
+        }).then(themesFound => {
 
-        return this.getThemeFileById(this.state.stagingTheme.id);
-      }).then(json => {
-        const asset = {
-          key: json.data.asset.key,
-          value: json.data.asset.value
-        }
-      return this.updateThemeFile(asset);
-    })
-      .catch(error => alert(error));
+          if (!themesFound) {
+            throw new Error('Did not find current themes');
+          }
+
+          return this.getThemeFileById(this.state.stagingTheme.id);
+        }).then(json => {
+          const asset = {
+            key: json.data.asset.key,
+            value: json.data.asset.value
+          }
+          return this.updateThemeFile(asset);
+        }).then(() => {
+          this.setState({
+            loadingThemeUpdate: false
+          });
+          this.fetchSuccess("Successfully updated live theme!")
+        })
+        .catch(error => {
+          this.setState({
+            loadingThemeUpdate: false
+          });
+          this.fetchFailed(error)
+        });
+    });
 
   };
 
