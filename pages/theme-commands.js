@@ -190,7 +190,8 @@ class ThemeCommands extends React.Component {
             >
               <Form onSubmit={this.handleThemeUpdate}>
                 <FormLayout>
-                  <Stack distribution="trailing">
+                  <Stack alignment="trailing" vertical={true}>
+                    <TextStyle variation="strong">Make sure any upcoming schedules are deleted before updating to prevent an overwrite.</TextStyle>
                     <Button loading={this.state.loadingThemeUpdate} primary submit>
                       Update Theme Now
                     </Button>
