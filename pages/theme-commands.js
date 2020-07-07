@@ -74,7 +74,17 @@ class ThemeCommands extends React.Component {
   };
 
   componentDidMount() {
-    this.getThemeSettings();
+
+    this.setState({ loadingThemeSettings: true }, async () => {
+      const response = await this.getStagingThemeName()
+        .then(() => {
+          return this.getThemeSettings();
+        })
+        .catch(error => {
+          this.fetchFailed(error)
+        });
+    });
+
   }
 
   render() {
@@ -289,6 +299,24 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
+      .catch(error => alert(error));
+  }
+
+  getStagingThemeName = () => {
+    const fetchURL = `/api/account/staging`;
+
+    const options = {
+      method: 'GET',
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        this.setState({
+          stagingThemeName: json.stagingThemeName
+        });
+        return json;
+      })
       .catch(error => alert(error));
   }
 
