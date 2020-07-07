@@ -22,6 +22,3 @@ To start server
     - Use an api call every 15 minutes to check schedule table and perform the theme change
     - Make all the calls async to prevent await for every deployment
     
-- Error Handling
-    - prevent user to choose a time that has passed when creating a new schedule, show a thoughtful error
-     
