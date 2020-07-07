@@ -32,6 +32,7 @@ class ThemeCommands extends React.Component {
     selectedHour: '00',
     selectedMinute: '00',
     scheduleDescription: "",
+    scheduleDescriptionLength: 0,
     hourOptions: [
       { label: '12 am', value: '00' },
       { label: '1 am', value: '01' },
@@ -138,8 +139,8 @@ class ThemeCommands extends React.Component {
                     </FormLayout.Group>
                     <TextField
                       value={scheduleDescription}
-                      onChange={this.handleChange('scheduleDescription')}
-                      label="Scheduled change description"
+                      onChange={value => this.handleScheduleDescription(value)}
+                      label={"Scheduled change description (" + this.state.scheduleDescriptionLength + "/150)" }
                       type="text"
                     />
                     <Stack distribution="trailing">
@@ -178,6 +179,17 @@ class ThemeCommands extends React.Component {
     });
     console.log('submission staging theme', this.state);
 
+  };
+
+  handleScheduleDescription = (value) => {
+    if (value.length > 150) {
+      this.fetchFailed("Description limit is 150 characters.")
+    } else {
+      this.setState({
+        scheduleDescription: value,
+        scheduleDescriptionLength: value.length
+      });
+    }
   };
 
   handleScheduleSubmit = async () => {
