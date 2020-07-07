@@ -78,9 +78,15 @@ class ThemeCommands extends React.Component {
     this.setState({ loadingThemeSettings: true }, async () => {
       const response = await this.getStagingThemeName()
         .then(() => {
+          if (this.state.stagingThemeName === "" && !_.isEmpty(this.state.activeTheme)) {
+            this.setState({
+              stagingThemeName: "Staging-" + this.state.activeTheme.name
+            });
+          }
           return this.getThemeSettings();
         })
         .catch(error => {
+          this.setState({ loadingThemeSettings: false });
           this.fetchFailed(error)
         });
     });
@@ -107,7 +113,7 @@ class ThemeCommands extends React.Component {
           <Layout>
             <Layout.AnnotatedSection
               title="Theme Settings"
-              description="Duplicate your theme and rename it. This is the theme where you will be updating from. We recommended renaming the duplicated theme with 'Staging-' as a prefix. * Make sure the name is unique from other theme names *"
+              description="Duplicate your theme and rename it. Go to 'Online Store' -> 'Themes' then click the 'Actions' dropdown on your live theme and select 'Duplicate'. When complete, we recommended renaming the duplicated theme with 'Staging-' as a prefix. Then add it here under 'Staging Theme Name'. This is the theme where you will be updating and scheduling changes from. * Make sure the name is unique from other theme names *"
             >
               <Card sectioned>
                 <TextContainer>
