@@ -12,7 +12,11 @@ import {
   DatePicker,
   Select,
   Frame,
-  Toast
+  Toast,
+  Heading,
+  TextContainer,
+  ButtonGroup,
+  Spinner
 } from '@shopify/polaris';
 var _ = require('lodash');
 
@@ -23,8 +27,10 @@ class ThemeCommands extends React.Component {
     toastError: false,
     loadingScheduleSubmit: false,
     loadingThemeUpdate: false,
+    loadingThemeSettings: false,
     activeTheme: {},
-    stagingThemeName: 'Staging-Debut',
+    stagingThemeName: '',
+    stagingThemeNameLength: 0,
     stagingTheme: {},
     selectedDate: new Date(),
     selectedMonth: new Date().getMonth(),
@@ -67,9 +73,13 @@ class ThemeCommands extends React.Component {
     ],
   };
 
+  componentDidMount() {
+    this.getThemeSettings();
+  }
+
   render() {
 
-    const { toastActive, toastContent, toastError } = this.state;
+    const { toastActive, toastContent, toastError, activeTheme, stagingTheme } = this.state;
 
     const toastMarkup = toastActive ? (
       <Toast content={toastContent} error={toastError} onDismiss={this.toggleToastActive} />
@@ -86,25 +96,31 @@ class ThemeCommands extends React.Component {
         <Page>
           <Layout>
             <Layout.AnnotatedSection
-              title="Name of theme to update from"
-              description="Copy your theme and rename it. This is the theme where you will be updating from. We recommended renaming duplicated them with 'Staging-' as a prefix. * Make sure the name is unique from other themes *"
+              title="Theme Settings"
+              description="Duplicate your theme and rename it. This is the theme where you will be updating from. We recommended renaming the duplicated theme with 'Staging-' as a prefix. * Make sure the name is unique from other theme names *"
             >
               <Card sectioned>
-                <Form onSubmit={this.handleSubmit}>
-                  <FormLayout>
-                    <TextField
-                      value={stagingThemeName}
-                      onChange={this.handleChange('stagingThemeName')}
-                      label="Theme Name"
-                      type="text"
-                    />
-                    <Stack distribution="trailing">
-                      <Button primary submit>
-                        Save
-                      </Button>
-                    </Stack>
-                  </FormLayout>
-                </Form>
+                <TextContainer>
+                  <p><strong>Active Theme Name:</strong> {this.state.loadingThemeSettings ? <Spinner accessibilityLabel="Loading Theme Settings" size="small" color="teal" /> : !_.isEmpty(activeTheme) ? activeTheme.name : <TextStyle variation="negative">Theme not found</TextStyle>}</p>
+                  <p><strong>Staging Theme:</strong> {this.state.loadingThemeSettings ? <Spinner accessibilityLabel="Loading Theme Settings" size="small" color="teal" /> : !_.isEmpty(stagingTheme) ? <TextStyle variation="positive">Theme found</TextStyle> : <TextStyle variation="negative">Theme not found</TextStyle>}</p>
+                </TextContainer>
+                <div style={{ marginTop: '30px'}}>
+                  <Form onSubmit={this.handleSubmit}>
+                    <FormLayout>
+                      <TextField
+                        value={stagingThemeName}
+                        label={"Staging Theme Name (" + this.state.stagingThemeNameLength + "/150)"}
+                        type="text"
+                        onChange={value => this.handleStagingThemeName(value)}
+                      />
+                      <Stack distribution="trailing">
+                        <Button primary submit>
+                          Save Settings
+                        </Button>
+                      </Stack>
+                    </FormLayout>
+                  </Form>
+                </div>
               </Card>
             </Layout.AnnotatedSection>
             <Layout.AnnotatedSection
@@ -173,13 +189,108 @@ class ThemeCommands extends React.Component {
     );
   }
 
-  handleSubmit = () => {
-    this.setState({
-      stagingThemeName: this.state.stagingThemeName,
+  getThemeSettings = () => {
+    this.setState({ loadingThemeSettings: true }, async () => {
+
+      const response = await this.getThemeList()
+        .then(json => {
+          return this.findThemeSettings(json);
+        }).then(themesFound => {
+
+          if (!themesFound) {
+            // throw new Error('Did not find current themes');
+          }
+
+          this.setState({
+            loadingThemeSettings: false
+          });
+        })
+        .catch(error => {
+          this.setState({
+            loadingThemeSettings: false
+          });
+          this.fetchFailed(error)
+        });
     });
-    console.log('submission staging theme', this.state);
+  };
+
+  findThemeSettings = (json) => {
+
+    const { stagingThemeName } = this.state;
+
+    if (json.data.themes !== undefined) {
+      var themes = json.data.themes;
+      themes.forEach((theme) => {
+        if (stagingThemeName) {
+          if (theme.name === stagingThemeName) {
+            this.setState({
+              stagingTheme: theme,
+            });
+          }
+        }
+
+        if (theme.role === "main") {
+          this.setState({
+            activeTheme: theme,
+          });
+        }
+      })
+    }
+
+    if (_.isEmpty(this.state.stagingTheme) ) {
+      // throw new Error('Did not find staging theme');
+      this.fetchFailed("Did not find staging theme.")
+    }
+
+    if(_.isEmpty(this.state.activeTheme)) {
+      // throw new Error('Did not find active theme');
+      this.fetchFailed("Did not find active theme.")
+    }
+
+    return true;
+  }
+
+  handleSubmit = () => {
+
+    this.setState({ loadingThemeSettings: true, stagingThemeName: this.state.stagingThemeName }, async () => {
+      const response = await this.getThemeList()
+        .then(json => {
+          return this.findThemeSettings(json);
+        }).then(themesFound => {
+
+          return this.saveStagingThemeName();
+        }).then( () => {
+          this.setState({
+            loadingThemeSettings: false
+          });
+        })
+        .catch(error => {
+          this.setState({
+            loadingThemeSettings: false
+          });
+          this.fetchFailed(error)
+        });
+    });
 
   };
+
+  saveStagingThemeName = () => {
+    const fetchURL = `/api/account/staging`;
+
+    const data = {
+      stagingThemeName: this.state.stagingThemeName
+    }
+
+    const options = {
+      method: 'POST',
+      body: JSON.stringify(data)
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => json)
+      .catch(error => alert(error));
+  }
 
   handleScheduleDescription = (value) => {
     if (value.length > 150) {
@@ -188,6 +299,17 @@ class ThemeCommands extends React.Component {
       this.setState({
         scheduleDescription: value,
         scheduleDescriptionLength: value.length
+      });
+    }
+  };
+
+  handleStagingThemeName = (value) => {
+    if (value.length > 150) {
+      this.fetchFailed("Theme name limit is 150 characters.")
+    } else {
+      this.setState({
+        stagingThemeName: value,
+        stagingThemeNameLength: value.length
       });
     }
   };
