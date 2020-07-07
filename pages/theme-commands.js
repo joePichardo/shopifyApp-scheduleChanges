@@ -565,16 +565,10 @@ class ThemeCommands extends React.Component {
   }
 
   fetchFailed = (error) => {
-    this.setState({
-      loadingSchedules: false
-    });
     this.showToast(error, true);
   }
 
   fetchSuccess = (message) => {
-    this.setState({
-      loadingSchedules: false
-    });
     this.showToast(message, false);
   }
 
