@@ -289,10 +289,6 @@ class ThemeSchedules extends React.Component {
           return this.findCurrentThemes(json);
         }).then(themesFound => {
 
-          if (!themesFound) {
-            throw new Error('Did not find current themes');
-          }
-
           return this.updateThemeFile(asset);
         })
         .then(json => {
@@ -385,20 +381,24 @@ class ThemeSchedules extends React.Component {
   }
 
   findCurrentThemes = (json) => {
+
+    let foundCurrentTheme = {};
     if (json.data.themes !== undefined) {
       var themes = json.data.themes;
       themes.forEach((theme) => {
         if (theme.role === "main") {
-          this.setState({
-            activeTheme: theme,
-          });
+          foundCurrentTheme = theme;
         }
       })
     }
 
-    if(_.isEmpty(this.state.activeTheme)) {
-      throw new Error('Did not find active theme');
-    }
+    this.setState({ activeTheme: foundCurrentTheme }, async () => {
+      if(_.isEmpty(this.state.activeTheme)) {
+        throw('Did not find active theme')
+      }
+
+      return true;
+    });
 
     return true;
   }
@@ -410,10 +410,6 @@ class ThemeSchedules extends React.Component {
         .then(json => {
           return this.findCurrentThemes(json);
         }).then(themesFound => {
-
-          if (!themesFound) {
-            throw new Error('Did not find current themes');
-          }
 
           return this.getBackupThemeFile(backupId);
         }).then(json => {
