@@ -208,7 +208,7 @@ class ThemeCommands extends React.Component {
         }).then(themesFound => {
 
           if (!themesFound) {
-            // throw new Error('Did not find current themes');
+            throw new Error('Did not find current themes');
           }
 
           this.setState({
@@ -248,13 +248,11 @@ class ThemeCommands extends React.Component {
     }
 
     if (_.isEmpty(this.state.stagingTheme) ) {
-      // throw new Error('Did not find staging theme');
-      this.fetchFailed("Did not find staging theme.")
+      throw new Error('Did not find staging theme');
     }
 
     if(_.isEmpty(this.state.activeTheme)) {
-      // throw new Error('Did not find active theme');
-      this.fetchFailed("Did not find active theme.")
+      throw new Error('Did not find active theme');
     }
 
     return true;
