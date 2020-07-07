@@ -402,6 +402,39 @@ app.prepare().then(() => {
 
   })
 
+  router.post('/api/account/staging', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const body = ctx.request.body;
+    const bodyObj = JSON.parse(body);
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/account/staging`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+        },
+        body: JSON.stringify({
+          storeAddress: shop,
+          stagingThemeName: bodyObj.stagingThemeName
+        })
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        data: responseJson,
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
   router.get('*', verifyRequest(), async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
