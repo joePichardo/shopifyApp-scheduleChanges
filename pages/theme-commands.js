@@ -196,6 +196,16 @@ class ThemeCommands extends React.Component {
 
       var scheduledDay = new Date(selectedYear, selectedMonth, dateRetrieved.getDate(), selectedHour, selectedMinute);
 
+      var now = new Date();
+
+      if (scheduledDay < now) {
+        this.setState({
+          loadingScheduleSubmit: false
+        });
+        this.fetchFailed("Scheduled time has passed. Pick new time.")
+        return false;
+      }
+
       const response = await this.getThemeList()
         .then(json => {
           return this.findCurrentThemes(json);
