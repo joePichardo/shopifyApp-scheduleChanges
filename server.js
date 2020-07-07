@@ -435,6 +435,35 @@ app.prepare().then(() => {
 
   })
 
+  router.get('/api/account/staging', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const body = ctx.request.body;
+
+    try {
+
+      const response = await fetch(`http://localhost:3001/account/staging`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+          "store-address": shop,
+        }
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        stagingThemeName: responseJson.account.stagingThemeName
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
   router.get('*', verifyRequest(), async (ctx) => {
     await handle(ctx.req, ctx.res);
     ctx.respond = false;
