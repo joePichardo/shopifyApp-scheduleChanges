@@ -26,6 +26,10 @@ const {
   HOST,
 } = process.env;
 
+const BACKEND = {
+  ADDRESS: 'https://scheduled-changes-api.joepichardo.com:3000'
+};
+
 app.prepare().then(() => {
   const server = new Koa();
   const router = new Router();
@@ -49,7 +53,7 @@ app.prepare().then(() => {
 
         const responseEmail = await getShopEmail(ctx, accessToken, shop);
 
-        const response = await fetch(`http://localhost:3001/account/signup`, {
+        const response = await fetch(`${BACKEND.ADDRESS}/account/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -211,7 +215,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/schedules?page=${page}&deployed=${deployed}&description=${description}`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedules?page=${page}&deployed=${deployed}&description=${description}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -241,7 +245,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/schedule/delete`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedule/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -274,7 +278,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/schedule/update`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedule/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -313,7 +317,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/schedule`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -350,7 +354,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/backup`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/theme/backup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -384,7 +388,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/theme/backup/${id}`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/theme/backup/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -414,7 +418,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/account/staging`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/account/staging`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -446,7 +450,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`http://localhost:3001/account/staging`, {
+      const response = await fetch(`${BACKEND.ADDRESS}/account/staging`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
