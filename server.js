@@ -27,7 +27,7 @@ const {
 } = process.env;
 
 const BACKEND = {
-  ADDRESS: 'https://scheduled-changes-api.joepichardo.com:3000'
+  ADDRESS: 'https://scheduled-changes-api.joepichardo.com:3001'
 };
 
 app.prepare().then(() => {
