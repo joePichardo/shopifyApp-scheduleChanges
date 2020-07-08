@@ -13,6 +13,7 @@ const {receiveWebhook, registerWebhook} = require('@shopify/koa-shopify-webhooks
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
 const { ApiVersion } = require('@shopify/koa-shopify-graphql-proxy');
 const getSubscriptionUrl = require('./server/getSubscriptionUrl');
+const getShopEmail = require('./server/getShopEmail');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -46,6 +47,8 @@ app.prepare().then(() => {
           sameSite: 'none'
         });
 
+        const responseEmail = await getShopEmail(ctx, accessToken, shop);
+
         const response = await fetch(`http://localhost:3001/account/signup`, {
           method: 'POST',
           headers: {
@@ -54,7 +57,8 @@ app.prepare().then(() => {
           },
           body: JSON.stringify({
             storeAddress: shop,
-            accessToken: accessToken
+            accessToken: accessToken,
+            email: responseEmail.data.shop.contactEmail
           })
         })
 
@@ -76,19 +80,19 @@ app.prepare().then(() => {
         //   console.log('Failed to register webhook', registration.result);
         // }
 
-        const registration = await registerWebhook({
-          address: `${HOST}/webhooks/themes/update`,
-          topic: 'THEMES_UPDATE',
-          accessToken,
-          shop,
-          apiVersion: ApiVersion.October19
-        });
-
-        if (registration.success) {
-          console.log('Successfully registered webhook!');
-        } else {
-          console.log('Failed to register webhook', registration.result);
-        }
+        // const registration = await registerWebhook({
+        //   address: `${HOST}/webhooks/themes/update`,
+        //   topic: 'THEMES_UPDATE',
+        //   accessToken,
+        //   shop,
+        //   apiVersion: ApiVersion.October19
+        // });
+        //
+        // if (registration.success) {
+        //   console.log('Successfully registered webhook!');
+        // } else {
+        //   console.log('Failed to register webhook', registration.result);
+        // }
 
         await getSubscriptionUrl(ctx, accessToken, shop);
       },
