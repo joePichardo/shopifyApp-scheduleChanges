@@ -24,10 +24,11 @@ const {
   SHOPIFY_API_SECRET_KEY,
   SHOPIFY_API_KEY,
   HOST,
+  BACKEND_ADDRESS
 } = process.env;
 
 const BACKEND = {
-  ADDRESS: 'https://scheduled-changes-api.joepichardo.com:3001'
+  ADDRESS: BACKEND_ADDRESS
 };
 
 app.prepare().then(() => {
