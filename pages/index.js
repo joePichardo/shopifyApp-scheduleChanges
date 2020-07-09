@@ -141,7 +141,7 @@ class ThemeCommands extends React.Component {
             </Layout.AnnotatedSection>
             <Layout.AnnotatedSection
               title="Schedule a date and time for the settings to be changed/updated"
-              description="Make sure you have reviewed your changes before scheduling a change. Your staging theme settings will be saved in it's current state and updated at the scheduled time."
+              description="Make sure you have reviewed your changes before scheduling a change. Your staging theme settings will be saved in it's current state and updated at the scheduled time. A backup of your active theme is made and tied to the schedule you make. Check the 'Theme Schedules' tab to view your scheduled changes."
             >
               <Card sectioned>
                 <Form onSubmit={this.handleScheduleSubmit}>
