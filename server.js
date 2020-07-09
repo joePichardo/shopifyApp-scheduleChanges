@@ -52,7 +52,16 @@ app.prepare().then(() => {
           sameSite: 'none'
         });
 
+        const bodyObj = {
+          storeAddress: shop,
+          accessToken: accessToken
+        };
+
         const responseEmail = await getShopEmail(ctx, accessToken, shop);
+
+        if (responseEmail) {
+          bodyObj["email"] = responseEmail.data.shop.contactEmail;
+        }
 
         const response = await fetch(`${BACKEND.ADDRESS}/account/signup`, {
           method: 'POST',
@@ -60,11 +69,7 @@ app.prepare().then(() => {
             'Content-Type': 'application/json',
             "X-Shopify-Access-Token": accessToken,
           },
-          body: JSON.stringify({
-            storeAddress: shop,
-            accessToken: accessToken,
-            email: responseEmail.data.shop.contactEmail
-          })
+          body: JSON.stringify(bodyObj)
         })
 
         const responseJson = await response.json();
