@@ -5,12 +5,11 @@ const getSubscriptionUrl = async (ctx, accessToken, shop) => {
           name: "Super Duper Plan"
           trialDays: 14
           returnUrl: "${process.env.HOST}"
-          test: true
           lineItems: [
           {
             plan: {
               appRecurringPricingDetails: {
-                  price: { amount: 9.99, currencyCode: USD }
+                  price: { amount: 4.99, currencyCode: USD }
               }
             }
           }
