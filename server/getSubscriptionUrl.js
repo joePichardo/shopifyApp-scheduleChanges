@@ -3,21 +3,14 @@ const getSubscriptionUrl = async (ctx, accessToken, shop) => {
     query: `mutation {
       appSubscriptionCreate(
           name: "Super Duper Plan"
+          trialDays: 14
           returnUrl: "${process.env.HOST}"
           test: true
           lineItems: [
           {
             plan: {
-              appUsagePricingDetails: {
-                  cappedAmount: { amount: 10, currencyCode: USD }
-                  terms: "$1 for 1000 emails"
-              }
-            }
-          }
-          {
-            plan: {
               appRecurringPricingDetails: {
-                  price: { amount: 10, currencyCode: USD }
+                  price: { amount: 9.99, currencyCode: USD }
               }
             }
           }
