@@ -57,6 +57,12 @@ app.prepare().then(() => {
           accessToken: accessToken
         };
 
+        const responseEmail = await getShopEmail(ctx, accessToken, shop);
+
+        if (responseEmail && responseEmail.data.shop.contactEmail) {
+          bodyObj["email"] = responseEmail.data.shop.contactEmail;
+        }
+
         const response = await fetch(`${BACKEND.ADDRESS}/account/signup`, {
           method: 'POST',
           headers: {
