@@ -104,6 +104,20 @@ app.prepare().then(() => {
         //   console.log('Failed to register webhook', registration.result);
         // }
 
+        const registration = await registerWebhook({
+          address: `${HOST}/webhooks/app/uninstalled`,
+          topic: 'APP_UNINSTALLED',
+          accessToken,
+          shop,
+          apiVersion: ApiVersion.October19
+        });
+
+        if (registration.success) {
+          console.log('Successfully registered webhook!');
+        } else {
+          console.log('Failed to register webhook', registration.result);
+        }
+
         await getSubscriptionUrl(ctx, accessToken, shop);
       },
     }),
@@ -111,7 +125,11 @@ app.prepare().then(() => {
 
   const webhook = receiveWebhook({secret: SHOPIFY_API_SECRET_KEY});
 
-  router.post('/webhooks/themes/update', webhook, (ctx) => {
+  // router.post('/webhooks/themes/update', webhook, (ctx) => {
+  //   console.log('received webhook: ', ctx.state.webhook);
+  // });
+
+  router.post('/webhooks/app/uninstalled', webhook, (ctx) => {
     console.log('received webhook: ', ctx.state.webhook);
   });
 
