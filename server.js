@@ -13,6 +13,8 @@ const {receiveWebhook, registerWebhook} = require('@shopify/koa-shopify-webhooks
 const { default: graphQLProxy } = require('@shopify/koa-shopify-graphql-proxy');
 const { ApiVersion } = require('@shopify/koa-shopify-graphql-proxy');
 const getSubscriptionUrl = require('./server/getSubscriptionUrl');
+const getApps = require('./server/getApps');
+const returnSubscriptionLink = require('./server/returnSubscriptionLink');
 const getShopEmail = require('./server/getShopEmail');
 
 const port = parseInt(process.env.PORT, 10) || 3000;
@@ -76,71 +78,19 @@ app.prepare().then(() => {
 
         console.log(responseJson);
 
-        // const registration = await registerWebhook({
-        //   address: `${HOST}/webhooks/products/create`,
-        //   topic: 'PRODUCTS_CREATE',
-        //   accessToken,
-        //   shop,
-        //   apiVersion: ApiVersion.October19
-        // });
-        //
-        // if (registration.success) {
-        //   console.log('Successfully registered webhook!');
-        // } else {
-        //   console.log('Failed to register webhook', registration.result);
-        // }
-
-        // const registration = await registerWebhook({
-        //   address: `${HOST}/webhooks/themes/update`,
-        //   topic: 'THEMES_UPDATE',
-        //   accessToken,
-        //   shop,
-        //   apiVersion: ApiVersion.October19
-        // });
-        //
-        // if (registration.success) {
-        //   console.log('Successfully registered webhook!');
-        // } else {
-        //   console.log('Failed to register webhook', registration.result);
-        // }
-
-        const registration = await registerWebhook({
-          address: `${HOST}/webhooks/app/uninstalled`,
-          topic: 'APP_UNINSTALLED',
-          accessToken,
-          shop,
-          apiVersion: ApiVersion.October19
-        });
-
-        if (registration.success) {
-          console.log('Successfully registered webhook!');
-        } else {
-          console.log('Failed to register webhook', registration.result);
-        }
-
         await getSubscriptionUrl(ctx, accessToken, shop);
       },
     }),
   );
 
-  const webhook = receiveWebhook({secret: SHOPIFY_API_SECRET_KEY});
-
-  // router.post('/webhooks/themes/update', webhook, (ctx) => {
-  //   console.log('received webhook: ', ctx.state.webhook);
-  // });
-
-  router.post('/webhooks/app/uninstalled', webhook, (ctx) => {
-    console.log('received webhook: ', ctx.state.webhook);
-  });
-
-  server.use(graphQLProxy({version: ApiVersion.October19}))
+  server.use(graphQLProxy({version: ApiVersion.July20 }))
 
   router.get('/api/:object', async (ctx) => {
     const { shop, accessToken } = ctx.session;
 
     try {
 
-      const fetchURL = "https://" + shop + "/admin/api/2019-04/" + ctx.params.object + ".json";
+      const fetchURL = "https://" + shop + "/admin/api/2020-07/" + ctx.params.object + ".json";
 
       const results = await fetch(fetchURL, {
         headers: {
@@ -149,6 +99,44 @@ app.prepare().then(() => {
       })
         .then(response => response.json())
         .then(json => json);
+
+      ctx.body = {
+        status: 'success',
+        data: results,
+      };
+    } catch (err) {
+      console.log(err);
+    }
+  })
+
+  router.get('/app/subs', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    try {
+
+      const results = await getApps(ctx, accessToken, shop)
+        .then(response => {
+          return response;
+        })
+
+      ctx.body = {
+        status: 'success',
+        data: results,
+      };
+    } catch (err) {
+      console.log(err);
+    }
+  })
+
+  router.get('/app/sublink', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    try {
+
+      const results = await returnSubscriptionLink(ctx, accessToken, shop)
+        .then(response => {
+          return response;
+        })
 
       ctx.body = {
         status: 'success',

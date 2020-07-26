@@ -16,12 +16,16 @@ import {
   Heading,
   TextContainer,
   ButtonGroup,
-  Spinner
+  Spinner,
+  Link
 } from '@shopify/polaris';
 var _ = require('lodash');
 
 class ThemeCommands extends React.Component {
   state = {
+    appActive: false,
+    loadingAppLink: true,
+    subscriptionLink: "",
     toastActive: false,
     toastContent: "",
     toastError: false,
@@ -74,7 +78,224 @@ class ThemeCommands extends React.Component {
   };
 
   componentDidMount() {
+    this.setState({ appActive: false, loadingAppLink: true }, async () => {
 
+      const getAppStatus = await this.getAppStatus()
+        .then(response => {
+
+          if (response === true) {
+            this.setState({ appActive: true });
+          }
+
+          return response;
+        })
+        .catch(error => {
+          this.setState({ appActive: false });
+          this.fetchFailed(error)
+        });
+
+      console.log('getAppStatus', getAppStatus);
+
+      if (getAppStatus === false) {
+        const getSubscriptionLink = await this.getSubscriptionLink()
+          .then(response => {
+            this.setState({ appActive: false, loadingAppLink: false, subscriptionLink: response });
+            return response;
+          })
+          .catch(error => {
+            this.setState({ appActive: false });
+            this.fetchFailed(error)
+          });
+      } else {
+        this.startApp();
+      }
+
+    });
+
+  }
+
+  render() {
+
+    const { appActive, subscriptionLink, loadingAppLink, toastActive, toastContent, toastError, activeTheme, stagingTheme } = this.state;
+
+    const toastMarkup = toastActive ? (
+      <Toast content={toastContent} error={toastError} onDismiss={this.toggleToastActive} />
+    ) : null;
+
+    const { stagingThemeName, selectedDate, minuteOptions, hourOptions, selectedMinute, selectedHour, scheduleDescription } = this.state;
+    const today = new Date()
+    const yesterday = new Date(today)
+
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const emptyLayout = subscriptionLink !== "" ? (
+      <Layout>
+        <Layout.AnnotatedSection
+          title="Activate Subscription"
+          description="Subscribe to the free trial or a paid plan to continue"
+        >
+          <Card sectioned>
+            <div style={{ marginTop: '30px'}}>
+              <Link url={subscriptionLink} monochrome={false} external={true}>
+                <Button primary disabled={loadingAppLink}>
+                  Click here to active app
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </Layout.AnnotatedSection>
+      </Layout>
+    ) : null;
+
+    const appLayout = (
+      <Layout>
+        <Layout.AnnotatedSection
+          title="Theme Settings"
+          description="Duplicate your theme and rename it. Go to 'Online Store' -> 'Themes' then click the 'Actions' dropdown on your live theme and select 'Duplicate'. When complete, we recommended renaming the duplicated theme with 'Staging-' as a prefix. Then add it here under 'Staging Theme Name'. This is the theme where you will be updating and scheduling changes from. * Make sure the name is unique from other theme names *"
+        >
+          <Card sectioned>
+            <TextContainer>
+              <p><strong>Active Theme Name:</strong> {this.state.loadingThemeSettings ? <Spinner accessibilityLabel="Loading Theme Settings" size="small" color="teal" /> : !_.isEmpty(activeTheme) ? activeTheme.name : <TextStyle variation="negative">Theme not found</TextStyle>}</p>
+              <p><strong>Staging Theme:</strong> {this.state.loadingThemeSettings ? <Spinner accessibilityLabel="Loading Theme Settings" size="small" color="teal" /> : !_.isEmpty(stagingTheme) ? <TextStyle variation="positive">Theme found</TextStyle> : <TextStyle variation="negative">Theme not found</TextStyle>}</p>
+            </TextContainer>
+            <div style={{ marginTop: '30px'}}>
+              <Form onSubmit={this.handleSubmit}>
+                <FormLayout>
+                  <TextField
+                    value={stagingThemeName}
+                    label={"Staging Theme Name (" + this.state.stagingThemeNameLength + "/150)"}
+                    type="text"
+                    onChange={value => this.handleStagingThemeName(value)}
+                  />
+                  <Stack distribution="trailing">
+                    <Button primary submit>
+                      Save Settings
+                    </Button>
+                  </Stack>
+                </FormLayout>
+              </Form>
+            </div>
+          </Card>
+        </Layout.AnnotatedSection>
+        <Layout.AnnotatedSection
+          title="Schedule a date and time for the settings to be changed/updated"
+          description="Make sure you have reviewed your changes before scheduling a change. Your staging theme settings will be saved in it's current state and updated at the scheduled time. A backup of your active theme is made and tied to the schedule you make. Check the 'Theme Schedules' tab to view your scheduled changes."
+        >
+          <Card sectioned>
+            <Form onSubmit={this.handleScheduleSubmit}>
+              <FormLayout>
+                <DatePicker
+                  month={this.state.selectedMonth}
+                  onMonthChange={this.handleChange('selectedMonth')}
+                  year={this.state.selectedYear}
+                  onChange={this.handleChange('selectedDate')}
+                  selected={selectedDate}
+                  allowRange={false}
+                  disableDatesBefore={yesterday}
+                />
+                <FormLayout.Group>
+                  <Select
+                    label="Hour"
+                    options={hourOptions}
+                    onChange={this.handleChange('selectedHour')}
+                    value={selectedHour}
+                  />
+                  <Select
+                    label="Minute"
+                    options={minuteOptions}
+                    onChange={this.handleChange('selectedMinute')}
+                    value={selectedMinute}
+                  />
+                </FormLayout.Group>
+                <TextField
+                  value={scheduleDescription}
+                  onChange={value => this.handleScheduleDescription(value)}
+                  label={"Scheduled change description (" + this.state.scheduleDescriptionLength + "/150)" }
+                  type="text"
+                />
+                <Stack distribution="trailing">
+                  <Button primary loading={this.state.loadingScheduleSubmit} submit>
+                    Save
+                  </Button>
+                </Stack>
+              </FormLayout>
+            </Form>
+          </Card>
+        </Layout.AnnotatedSection>
+        <Layout.AnnotatedSection
+          title="Update Now"
+          description="Update changes on your staging theme to the live theme."
+        >
+          <Form onSubmit={this.handleThemeUpdate}>
+            <FormLayout>
+              <Stack alignment="trailing" vertical={true}>
+                <TextStyle variation="strong">Make sure any upcoming schedules are deleted before updating to prevent an overwrite.</TextStyle>
+                <Button loading={this.state.loadingThemeUpdate} primary submit>
+                  Update Theme Now
+                </Button>
+              </Stack>
+            </FormLayout>
+          </Form>
+        </Layout.AnnotatedSection>
+      </Layout>
+    );
+
+    return (
+      <Frame>
+        <Page>
+          { appActive ? appLayout : emptyLayout }
+          {toastMarkup}
+        </Page>
+      </Frame>
+    );
+  }
+
+  getAppStatus = () => {
+    const fetchURL = `/app/subs`;
+
+    const options = {
+      method: 'GET',
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        console.log('getApps json', json)
+
+        let appActive = false;
+        if (json.data !== undefined) {
+          var subscriptions = json.data;
+          subscriptions.forEach((subscription) => {
+            if (subscription.status === 'ACTIVE' || subscription.status === 'ACCEPTED') {
+              appActive = true;
+            }
+          })
+        }
+
+        return appActive;
+      })
+      .catch(error => alert(error));
+  }
+
+
+  getSubscriptionLink = () => {
+    const fetchURL = `/app/sublink`;
+
+    const options = {
+      method: 'GET',
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        console.log('getSubscriptionLink json', json)
+
+        return json.data;
+      })
+      .catch(error => alert(error));
+  }
+
+  startApp = () => {
     this.setState({ loadingThemeSettings: true }, async () => {
       const response = await this.getStagingThemeName()
         .then(() => {
@@ -90,120 +311,6 @@ class ThemeCommands extends React.Component {
           this.fetchFailed(error)
         });
     });
-
-  }
-
-  render() {
-
-    const { toastActive, toastContent, toastError, activeTheme, stagingTheme } = this.state;
-
-    const toastMarkup = toastActive ? (
-      <Toast content={toastContent} error={toastError} onDismiss={this.toggleToastActive} />
-    ) : null;
-
-    const { stagingThemeName, selectedDate, minuteOptions, hourOptions, selectedMinute, selectedHour, scheduleDescription } = this.state;
-    const today = new Date()
-    const yesterday = new Date(today)
-
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    return (
-      <Frame>
-        <Page>
-          <Layout>
-            <Layout.AnnotatedSection
-              title="Theme Settings"
-              description="Duplicate your theme and rename it. Go to 'Online Store' -> 'Themes' then click the 'Actions' dropdown on your live theme and select 'Duplicate'. When complete, we recommended renaming the duplicated theme with 'Staging-' as a prefix. Then add it here under 'Staging Theme Name'. This is the theme where you will be updating and scheduling changes from. * Make sure the name is unique from other theme names *"
-            >
-              <Card sectioned>
-                <TextContainer>
-                  <p><strong>Active Theme Name:</strong> {this.state.loadingThemeSettings ? <Spinner accessibilityLabel="Loading Theme Settings" size="small" color="teal" /> : !_.isEmpty(activeTheme) ? activeTheme.name : <TextStyle variation="negative">Theme not found</TextStyle>}</p>
-                  <p><strong>Staging Theme:</strong> {this.state.loadingThemeSettings ? <Spinner accessibilityLabel="Loading Theme Settings" size="small" color="teal" /> : !_.isEmpty(stagingTheme) ? <TextStyle variation="positive">Theme found</TextStyle> : <TextStyle variation="negative">Theme not found</TextStyle>}</p>
-                </TextContainer>
-                <div style={{ marginTop: '30px'}}>
-                  <Form onSubmit={this.handleSubmit}>
-                    <FormLayout>
-                      <TextField
-                        value={stagingThemeName}
-                        label={"Staging Theme Name (" + this.state.stagingThemeNameLength + "/150)"}
-                        type="text"
-                        onChange={value => this.handleStagingThemeName(value)}
-                      />
-                      <Stack distribution="trailing">
-                        <Button primary submit>
-                          Save Settings
-                        </Button>
-                      </Stack>
-                    </FormLayout>
-                  </Form>
-                </div>
-              </Card>
-            </Layout.AnnotatedSection>
-            <Layout.AnnotatedSection
-              title="Schedule a date and time for the settings to be changed/updated"
-              description="Make sure you have reviewed your changes before scheduling a change. Your staging theme settings will be saved in it's current state and updated at the scheduled time. A backup of your active theme is made and tied to the schedule you make. Check the 'Theme Schedules' tab to view your scheduled changes."
-            >
-              <Card sectioned>
-                <Form onSubmit={this.handleScheduleSubmit}>
-                  <FormLayout>
-                    <DatePicker
-                      month={this.state.selectedMonth}
-                      onMonthChange={this.handleChange('selectedMonth')}
-                      year={this.state.selectedYear}
-                      onChange={this.handleChange('selectedDate')}
-                      selected={selectedDate}
-                      allowRange={false}
-                      disableDatesBefore={yesterday}
-                    />
-                    <FormLayout.Group>
-                      <Select
-                        label="Hour"
-                        options={hourOptions}
-                        onChange={this.handleChange('selectedHour')}
-                        value={selectedHour}
-                      />
-                      <Select
-                        label="Minute"
-                        options={minuteOptions}
-                        onChange={this.handleChange('selectedMinute')}
-                        value={selectedMinute}
-                      />
-                    </FormLayout.Group>
-                    <TextField
-                      value={scheduleDescription}
-                      onChange={value => this.handleScheduleDescription(value)}
-                      label={"Scheduled change description (" + this.state.scheduleDescriptionLength + "/150)" }
-                      type="text"
-                    />
-                    <Stack distribution="trailing">
-                      <Button primary loading={this.state.loadingScheduleSubmit} submit>
-                        Save
-                      </Button>
-                    </Stack>
-                  </FormLayout>
-                </Form>
-              </Card>
-            </Layout.AnnotatedSection>
-            <Layout.AnnotatedSection
-              title="Update Now"
-              description="Update changes on your staging theme to the live theme."
-            >
-              <Form onSubmit={this.handleThemeUpdate}>
-                <FormLayout>
-                  <Stack alignment="trailing" vertical={true}>
-                    <TextStyle variation="strong">Make sure any upcoming schedules are deleted before updating to prevent an overwrite.</TextStyle>
-                    <Button loading={this.state.loadingThemeUpdate} primary submit>
-                      Update Theme Now
-                    </Button>
-                  </Stack>
-                </FormLayout>
-              </Form>
-            </Layout.AnnotatedSection>
-          </Layout>
-          {toastMarkup}
-        </Page>
-      </Frame>
-    );
   }
 
   getThemeSettings = () => {
