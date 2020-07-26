@@ -94,8 +94,6 @@ class ThemeCommands extends React.Component {
           this.fetchFailed(error)
         });
 
-      console.log('getAppStatus', getAppStatus);
-
       if (getAppStatus === false) {
         const getSubscriptionLink = await this.getSubscriptionLink()
           .then(response => {
@@ -260,7 +258,6 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => {
-        console.log('getApps json', json)
 
         let appActive = false;
         if (json.data !== undefined) {
@@ -288,7 +285,6 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => {
-        console.log('getSubscriptionLink json', json)
 
         return json.data;
       })

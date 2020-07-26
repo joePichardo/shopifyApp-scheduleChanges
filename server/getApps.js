@@ -14,9 +14,6 @@ const getApps = async (ctx, accessToken, shop) => {
           }`
   });
 
-  console.log('shop', shop)
-  console.log('accessToken', accessToken)
-
   const response = await fetch(`https://${shop}/admin/api/2019-10/graphql.json`, {
     method: 'POST',
     headers: {
@@ -26,11 +23,7 @@ const getApps = async (ctx, accessToken, shop) => {
     body: query
   })
 
-  console.log('getApps response', response)
-
   const responseJson = await response.json();
-  console.log('getApps responseJson', responseJson)
-
   return responseJson.data.currentAppInstallation.activeSubscriptions;
 };
 
