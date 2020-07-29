@@ -310,7 +310,8 @@ class ThemeSchedules extends React.Component {
           return response;
         })
         .catch(error => {
-          this.fetchFailed(error);
+          console.log(error);
+          this.fetchFailed("Error deploying schedule")
         });
     });
 
@@ -330,7 +331,8 @@ class ThemeSchedules extends React.Component {
         return json;
       })
       .catch(error => {
-        return error;
+        console.log(error);
+        this.fetchFailed("Error updating schedule")
       });
   }
 
@@ -361,7 +363,8 @@ class ThemeSchedules extends React.Component {
           return json;
         })
         .catch(error => {
-          this.fetchFailed(error);
+          console.log(error);
+          this.fetchFailed("Error deleting schedule")
         });
     });
   }
@@ -376,7 +379,8 @@ class ThemeSchedules extends React.Component {
       .then(response => response.json())
       .then(json => json)
       .catch(error => {
-        return error;
+        console.log(error);
+        this.fetchFailed("Error getting theme list")
       });
   }
 
@@ -424,7 +428,8 @@ class ThemeSchedules extends React.Component {
           return response;
         })
         .catch(error => {
-          this.fetchFailed(error);
+          console.log(error);
+          this.fetchFailed("Error restoring backup")
         });
     });
 
@@ -436,7 +441,8 @@ class ThemeSchedules extends React.Component {
     }).then(response => response.json())
       .then(json => json)
       .catch(error => {
-        return error;
+        console.log(error);
+        this.fetchFailed("Error getting backup")
       });
   }
 
@@ -452,7 +458,8 @@ class ThemeSchedules extends React.Component {
       .then(response => response.json())
       .then(json => json)
       .catch(error => {
-        return error;
+        console.log(error);
+        this.fetchFailed("Error saving staging theme name")
       });
   }
 
@@ -616,7 +623,8 @@ class ThemeSchedules extends React.Component {
 
         })
         .catch(error => {
-          this.fetchFailed(error);
+          console.log(error);
+          this.fetchFailed("Error fetching schedule list")
         });
     });
 

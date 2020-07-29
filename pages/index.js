@@ -90,8 +90,9 @@ class ThemeCommands extends React.Component {
           return response;
         })
         .catch(error => {
+          console.log(error);
           this.setState({ appActive: false });
-          this.fetchFailed(error)
+          this.fetchFailed("Error getting app status")
         });
 
       if (getAppStatus === false) {
@@ -101,8 +102,9 @@ class ThemeCommands extends React.Component {
             return response;
           })
           .catch(error => {
+            console.log(error);
             this.setState({ appActive: false });
-            this.fetchFailed(error)
+            this.fetchFailed("Error getting app subscription plan url")
           });
       } else {
         this.startApp();
@@ -271,7 +273,11 @@ class ThemeCommands extends React.Component {
 
         return appActive;
       })
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.setState({ appActive: false });
+        this.fetchFailed("Couldn't find app subscription status")
+      });
   }
 
 
@@ -288,7 +294,11 @@ class ThemeCommands extends React.Component {
 
         return json.data;
       })
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.setState({ appActive: false });
+        this.fetchFailed("Couldn't find app subscription plan url")
+      });
   }
 
   startApp = () => {
@@ -303,8 +313,9 @@ class ThemeCommands extends React.Component {
           return this.getThemeSettings();
         })
         .catch(error => {
+          console.log(error);
           this.setState({ loadingThemeSettings: false });
-          this.fetchFailed(error)
+          this.fetchFailed("Error starting app")
         });
     });
   }
@@ -322,10 +333,11 @@ class ThemeCommands extends React.Component {
           });
         })
         .catch(error => {
+          console.log(error);
           this.setState({
             loadingThemeSettings: false
           });
-          this.fetchFailed(error)
+          this.fetchFailed("Error finding theme settings")
         });
     });
   };
@@ -381,10 +393,11 @@ class ThemeCommands extends React.Component {
           });
         })
         .catch(error => {
+          console.log(error);
           this.setState({
             loadingThemeSettings: false
           });
-          this.fetchFailed(error)
+          this.fetchFailed("Error submitting theme settings")
         });
     });
 
@@ -405,7 +418,10 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error saving staging theme name")
+      });
   }
 
   getStagingThemeName = () => {
@@ -423,7 +439,10 @@ class ThemeCommands extends React.Component {
         });
         return json;
       })
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error getting staging theme name")
+      });
   }
 
   handleScheduleDescription = (value) => {
@@ -512,7 +531,8 @@ class ThemeCommands extends React.Component {
             loadingScheduleSubmit: false
           });
 
-          this.fetchFailed(error)
+          console.log(error);
+          this.fetchFailed("Error submitting schedule")
         });
     });
 
@@ -577,7 +597,8 @@ class ThemeCommands extends React.Component {
           this.setState({
             loadingThemeUpdate: false
           });
-          this.fetchFailed(error)
+          console.log(error);
+          this.fetchFailed("Error handling theme update")
         });
     });
 
@@ -592,7 +613,10 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error getting theme list")
+      });
   }
 
   getThemeFileById = (id) => {
@@ -600,7 +624,10 @@ class ThemeCommands extends React.Component {
       method: 'GET',
     }).then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error getting theme file")
+      });
   }
 
   updateThemeFile = (asset) => {
@@ -614,7 +641,10 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error updating theme file")
+      });
   }
 
   backupThemeFile = ({ themeId, data }) => {
@@ -628,7 +658,10 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error backing up theme file")
+      });
   }
 
   scheduleThemeFile = (schedule) => {
@@ -642,7 +675,10 @@ class ThemeCommands extends React.Component {
     return fetch(fetchURL, options)
       .then(response => response.json())
       .then(json => json)
-      .catch(error => alert(error));
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error scheduling theme")
+      });
   }
 
   handleChange = (field) => {
