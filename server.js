@@ -29,10 +29,6 @@ const {
   BACKEND_ADDRESS
 } = process.env;
 
-const BACKEND = {
-  ADDRESS: BACKEND_ADDRESS
-};
-
 app.prepare().then(() => {
   const server = new Koa();
   const router = new Router();
@@ -65,7 +61,7 @@ app.prepare().then(() => {
           bodyObj["email"] = responseEmail.data.shop.contactEmail;
         }
 
-        const response = await fetch(`${BACKEND.ADDRESS}/account/signup`, {
+        const response = await fetch(`${BACKEND_ADDRESS}/account/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -227,7 +223,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedules?page=${page}&deployed=${deployed}&description=${description}`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/theme/schedules?page=${page}&deployed=${deployed}&description=${description}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -257,7 +253,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedule/delete`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/theme/schedule/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -290,7 +286,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedule/update`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/theme/schedule/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -329,7 +325,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/theme/schedule`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/theme/schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -366,7 +362,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/theme/backup`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/theme/backup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -400,7 +396,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/theme/backup/${id}`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/theme/backup/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -430,7 +426,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/account/staging`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/account/staging`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -462,7 +458,7 @@ app.prepare().then(() => {
 
     try {
 
-      const response = await fetch(`${BACKEND.ADDRESS}/account/staging`, {
+      const response = await fetch(`${BACKEND_ADDRESS}/account/staging`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -476,6 +472,35 @@ app.prepare().then(() => {
       ctx.body = {
         status: 'success',
         stagingThemeName: responseJson.account.stagingThemeName
+      };
+
+    } catch (err) {
+      console.log(err);
+    }
+
+  })
+
+  router.get('/api/account/info', async (ctx) => {
+    const { shop, accessToken } = ctx.session;
+
+    const body = ctx.request.body;
+
+    try {
+
+      const response = await fetch(`${BACKEND_ADDRESS}/account/info`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          "X-Shopify-Access-Token": accessToken,
+          "store-address": shop,
+        }
+      })
+
+      const responseJson = await response.json();
+
+      ctx.body = {
+        status: 'success',
+        account: responseJson.account
       };
 
     } catch (err) {
