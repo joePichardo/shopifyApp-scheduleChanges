@@ -24,6 +24,7 @@ class MyApp extends App {
         <Head>
           <title>Sample App</title>
           <meta charSet="utf-8" />
+          <script type="text/javascript" src="/static/hello.js"></script>
         </Head>
         <Provider config={config}>
           <AppProvider i18n={translations}>
