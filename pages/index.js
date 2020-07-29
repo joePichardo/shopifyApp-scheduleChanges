@@ -78,16 +78,26 @@ class ThemeCommands extends React.Component {
   };
 
   componentDidMount() {
+
+    let appStatus = false;
+
     this.setState({ appActive: false, loadingAppLink: true }, async () => {
 
       const getAppStatus = await this.getAppStatus()
         .then(response => {
 
-          if (response === true) {
-            this.setState({ appActive: true });
-          }
+          appStatus = response;
 
-          return response;
+          return this.getAccountInfo();
+        })
+        .then(({ account }) => {
+          if (account !== undefined && account.storeAddress !== undefined && appStatus) {
+            this.setState({ appActive: true });
+            return true;
+          } else {
+            this.setState({ appActive: false });
+            return false;
+          }
         })
         .catch(error => {
           console.log(error);
@@ -138,7 +148,7 @@ class ThemeCommands extends React.Component {
             <div style={{ marginTop: '30px'}}>
               <Link url={subscriptionLink} monochrome={false} external={true}>
                 <Button primary disabled={loadingAppLink}>
-                  Click here to active app
+                  Click here to start app subscription
                 </Button>
               </Link>
             </div>
@@ -277,6 +287,24 @@ class ThemeCommands extends React.Component {
         console.log(error);
         this.setState({ appActive: false });
         this.fetchFailed("Couldn't find app subscription status")
+      });
+  }
+
+  getAccountInfo = () => {
+    const fetchURL = `/api/account/info`;
+
+    const options = {
+      method: 'GET'
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        return json;
+      })
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error getting account info")
       });
   }
 
