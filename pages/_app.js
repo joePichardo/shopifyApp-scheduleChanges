@@ -22,7 +22,7 @@ class MyApp extends App {
     return (
       <React.Fragment>
         <Head>
-          <title>Sample App</title>
+          <title>Schedule Theme Changes</title>
           <meta charSet="utf-8" />
           <script type="text/javascript" src="/static/hello.js"></script>
         </Head>
