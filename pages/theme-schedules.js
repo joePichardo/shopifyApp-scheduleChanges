@@ -19,7 +19,7 @@ import {
   ChoiceList,
   TextContainer,
   Toast,
-  Frame
+  Frame, Link, Spinner
 } from '@shopify/polaris';
 var _ = require('lodash');
 var moment = require('moment');
@@ -28,6 +28,9 @@ const img = 'https://cdn.shopify.com/s/files/1/0757/9955/files/empty-state.svg';
 
 class ThemeSchedules extends React.Component {
   state = {
+    appActive: false,
+    loadingAppLink: true,
+    subscriptionLink: "",
     scheduleList: [],
     selectedItems: [],
     selectedItem: {},
@@ -43,13 +46,57 @@ class ThemeSchedules extends React.Component {
     loadingSchedules: false
   };
 
+
   componentDidMount() {
-    this.fetchScheduleList();
+
+    let appStatus = false;
+
+    this.setState({ appActive: false, loadingAppLink: true }, async () => {
+
+      const getAppStatus = await this.getAppStatus()
+        .then(response => {
+
+          appStatus = response;
+
+          return this.getAccountInfo();
+        })
+        .then(({ account }) => {
+          if (account !== undefined && account.storeAddress !== undefined && appStatus) {
+            this.setState({ appActive: true });
+            return true;
+          } else {
+            this.setState({ appActive: false });
+            return false;
+          }
+        })
+        .catch(error => {
+          console.log(error);
+          this.setState({ appActive: false });
+          this.fetchFailed("Error getting app status")
+        });
+
+      if (getAppStatus === false) {
+        const getSubscriptionLink = await this.getSubscriptionLink()
+          .then(response => {
+            this.setState({ appActive: false, loadingAppLink: false, subscriptionLink: response });
+            return response;
+          })
+          .catch(error => {
+            console.log(error);
+            this.setState({ appActive: false });
+            this.fetchFailed("Error getting app subscription plan url")
+          });
+      } else {
+        this.fetchScheduleList();
+      }
+
+    });
+
   }
 
   render() {
 
-    const { toastActive, toastContent, toastError } = this.state;
+    const { toastActive, toastContent, toastError, subscriptionLink, appActive, loadingAppLink } = this.state;
 
     const toastMarkup = toastActive ? (
       <Toast content={toastContent} error={toastError} onDismiss={this.toggleToastActive} />
@@ -128,73 +175,96 @@ class ThemeSchedules extends React.Component {
         </EmptyState>
       ) : undefined;
 
+    const emptyLayout = subscriptionLink !== "" ? (
+      <Layout>
+        <Layout.AnnotatedSection
+          title="Activate Subscription"
+          description="Subscribe to the free trial or a paid plan to continue"
+        >
+          <Card sectioned>
+            <div style={{ marginTop: '30px'}}>
+              <Link url={subscriptionLink} monochrome={false} external={true}>
+                <Button primary disabled={loadingAppLink}>
+                  Click here to start app subscription
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </Layout.AnnotatedSection>
+      </Layout>
+    ) : null;
+
+    const appLayout = (
+      <Layout>
+        <Layout.Section>
+          <Card>
+            <ResourceList
+              loading={this.state.loadingSchedules}
+              emptyState={emptyStateScheduleList}
+              filterControl={filterControl}
+              resourceName={{singular: 'schedule', plural: 'schedules'}}
+              items={this.state.scheduleList}
+              bulkActions={bulkActions}
+              selectable
+              selectedItems={this.state.selectedItems}
+              onSelectionChange={this.setSelectedItems}
+              renderItem={(item, index) => {
+                const {id, description, scheduleAt, deployed, backupId} = item;
+
+                return (
+                  <ResourceItem
+                    id={id}
+                    key={deployed && index}
+                    accessibilityLabel={`Scheduled change description: ${description}`}
+                    verticalAlignment={"center"}
+                  >
+                    <Stack alignment="center">
+                      <Stack.Item fill>
+                        <h3>
+                          <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
+                        </h3>
+                        <div>{description}</div>
+                        <div>Deployed: {deployed ? "Yes" : "No"}</div>
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
+                      </Stack.Item>
+                      <Stack.Item>
+                        <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
+                      </Stack.Item>
+                    </Stack>
+                  </ResourceItem>
+                );
+              }}
+            />
+          </Card>
+          <div style={{height: '100px', marginTop: '15px'}}>
+            <Pagination
+              hasPrevious={this.state.pageQuery > 1}
+              previousKeys={[74]}
+              previousTooltip="j"
+              onPrevious={() => {
+                this.handlePreviousPage();
+              }}
+              hasNext={this.state.scheduleList.length > 9}
+              nextKeys={[75]}
+              nextTooltip="k"
+              onNext={() => {
+                this.handleNextPage();
+              }}
+            />
+          </div>
+        </Layout.Section>
+      </Layout>
+    );
+
     return (
       <Frame>
         <Page>
-          <Layout>
-            <Layout.Section>
-              <Card>
-                <ResourceList
-                  loading={this.state.loadingSchedules}
-                  emptyState={emptyStateScheduleList}
-                  filterControl={filterControl}
-                  resourceName={{singular: 'schedule', plural: 'schedules'}}
-                  items={this.state.scheduleList}
-                  bulkActions={bulkActions}
-                  selectable
-                  selectedItems={this.state.selectedItems}
-                  onSelectionChange={this.setSelectedItems}
-                  renderItem={(item, index) => {
-                    const {id, description, scheduleAt, deployed, backupId} = item;
-
-                    return (
-                      <ResourceItem
-                        id={id}
-                        key={deployed && index}
-                        accessibilityLabel={`Scheduled change description: ${description}`}
-                        verticalAlignment={"center"}
-                      >
-                        <Stack alignment="center">
-                          <Stack.Item fill>
-                            <h3>
-                              <TextStyle variation="strong">{moment(scheduleAt).format("LLLL").toString()}</TextStyle>
-                            </h3>
-                            <div>{description}</div>
-                            <div>Deployed: {deployed ? "Yes" : "No"}</div>
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button primary onClick={() => { this.handleModalChange("deploySchedule", item) }}>Deploy Now</Button>
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button onClick={() => { this.handleModalChange("restoreBackup", item) }}>Restore Backup</Button>
-                          </Stack.Item>
-                          <Stack.Item>
-                            <Button destructive={true} onClick={() => { this.handleModalChange("deleteSchedule", item) }}>Delete Schedule</Button>
-                          </Stack.Item>
-                        </Stack>
-                      </ResourceItem>
-                    );
-                  }}
-                />
-              </Card>
-              <div style={{height: '100px', marginTop: '15px'}}>
-                <Pagination
-                  hasPrevious={this.state.pageQuery > 1}
-                  previousKeys={[74]}
-                  previousTooltip="j"
-                  onPrevious={() => {
-                    this.handlePreviousPage();
-                  }}
-                  hasNext={this.state.scheduleList.length > 9}
-                  nextKeys={[75]}
-                  nextTooltip="k"
-                  onNext={() => {
-                    this.handleNextPage();
-                  }}
-                />
-              </div>
-            </Layout.Section>
-          </Layout>
+          { appActive ? appLayout : emptyLayout }
           <Modal
             open={this.state.modalActive}
             onClose={this.handleModalChange}
@@ -642,6 +712,76 @@ class ThemeSchedules extends React.Component {
       loadingSchedules: false
     });
     this.showToast(message, false);
+  }
+
+  getAppStatus = () => {
+    const fetchURL = `/app/subs`;
+
+    const options = {
+      method: 'GET',
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+
+        let appActive = false;
+        if (json.data !== undefined) {
+          var subscriptions = json.data;
+          console.log('subscriptions', subscriptions)
+          subscriptions.forEach((subscription) => {
+            if (subscription.status === 'ACTIVE' || subscription.status === 'ACCEPTED') {
+              appActive = true;
+            }
+          })
+        }
+
+        return appActive;
+      })
+      .catch(error => {
+        console.log(error);
+        this.setState({ appActive: false });
+        this.fetchFailed("Couldn't find app subscription status")
+      });
+  }
+
+  getAccountInfo = () => {
+    const fetchURL = `/api/account/info`;
+
+    const options = {
+      method: 'GET'
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+        return json;
+      })
+      .catch(error => {
+        console.log(error);
+        this.fetchFailed("Error getting account info")
+      });
+  }
+
+
+  getSubscriptionLink = () => {
+    const fetchURL = `/app/sublink`;
+
+    const options = {
+      method: 'GET',
+    };
+
+    return fetch(fetchURL, options)
+      .then(response => response.json())
+      .then(json => {
+
+        return json.data;
+      })
+      .catch(error => {
+        console.log(error);
+        this.setState({ appActive: false });
+        this.fetchFailed("Couldn't find app subscription plan url")
+      });
   }
 
 }
