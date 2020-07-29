@@ -24,7 +24,7 @@ class MyApp extends App {
         <Head>
           <title>Schedule Theme Changes</title>
           <meta charSet="utf-8" />
-          <script type="text/javascript" src="/static/hello.js"></script>
+          <script type="text/javascript" src="/static/header-scripts.js"></script>
         </Head>
         <Provider config={config}>
           <AppProvider i18n={translations}>
