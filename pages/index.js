@@ -17,7 +17,9 @@ import {
   TextContainer,
   ButtonGroup,
   Spinner,
-  Link
+  Link,
+  DisplayText,
+  DescriptionList
 } from '@shopify/polaris';
 var _ = require('lodash');
 
@@ -159,6 +161,41 @@ class ThemeCommands extends React.Component {
 
     const appLayout = (
       <Layout>
+        <Card sectioned>
+          <DisplayText size="large" element="p">Setup Instructions</DisplayText>
+          <Heading style={{ paddingBottom: '15px' }}>Let's get started by following this guide</Heading>
+
+          <DescriptionList
+            items={[
+              {
+                term: 'Step 1',
+                description:
+                  'Duplicate your live theme and rename it with a recommended prefix "Staging-".',
+              },
+              {
+                term: 'Step 2',
+                description:
+                  'Make a change in the duplicated theme. This is the"Customize" option in your staging theme.',
+              },
+              {
+                term: 'Step 3',
+                description:
+                  'In the app under "Theme Commands" tab, add the staging theme name and click the save settings button. There will be messaging included whether the theme is found or not.',
+              },
+              {
+                term: 'Step 4',
+                description:
+                  'Then choose a date and time for the settings to be changed on the calendar section. Add a description of your update and submit your change. If you want to test drive the app, choose the closest time.',
+              },
+              {
+                term: 'Step 5',
+                description:
+                  'Updates will appear on your live theme on the scheduled time.',
+              },
+            ]}
+          />
+
+        </Card>
         <Layout.AnnotatedSection
           title="Theme Settings"
           description="Duplicate your theme and rename it. Go to 'Online Store' -> 'Themes' then click the 'Actions' dropdown on your live theme and select 'Duplicate'. When complete, we recommended renaming the duplicated theme with 'Staging-' as a prefix. Then add it here under 'Staging Theme Name'. This is the theme where you will be updating and scheduling changes from. * Make sure the name is unique from other theme names *"
