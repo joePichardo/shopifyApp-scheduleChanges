@@ -23,3 +23,7 @@ To start server
     - Make all the calls async to prevent await for every deployment
     
 - Throwing errors breaks app, return with error message
+
+- Add disclaimer that the app overwrites every and all settings when an update occurs
+
+- Return schedules by date descending
