@@ -19,12 +19,14 @@ import {
   Spinner,
   Link,
   DisplayText,
-  DescriptionList
+  DescriptionList,
+  Modal
 } from '@shopify/polaris';
 var _ = require('lodash');
 
 class ThemeCommands extends React.Component {
   state = {
+    modalActive: false,
     appActive: false,
     loadingAppLink: true,
     subscriptionLink: "",
@@ -195,6 +197,10 @@ class ThemeCommands extends React.Component {
             ]}
           />
 
+          <Button primary onClick={this.handleModalChange}>
+            View Video Guide/Instructions
+          </Button>
+
         </Card>
         <Layout.AnnotatedSection
           title="Theme Settings"
@@ -291,7 +297,26 @@ class ThemeCommands extends React.Component {
       <Frame>
         <Page>
           { appActive ? appLayout : emptyLayout }
+
           {toastMarkup}
+
+          <Modal
+            open={this.state.modalActive}
+            onClose={this.handleModalChange}
+            title="Video Guide/Instructions"
+            secondaryActions={[
+              {
+                content: 'Cancel',
+                onAction: this.handleModalChange
+              },
+            ]}
+          >
+            <Modal.Section>
+              <iframe width="560" height="315" src="https://www.youtube.com/embed/mAIUFt7OkM0?rel=0" frameBorder="0"
+                      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen></iframe>
+            </Modal.Section>
+          </Modal>
         </Page>
       </Frame>
     );
@@ -770,6 +795,10 @@ class ThemeCommands extends React.Component {
 
   fetchSuccess = (message) => {
     this.showToast(message, false);
+  }
+
+  handleModalChange = () => {
+    this.setState({ modalActive: !this.state.modalActive });
   }
 
 }
