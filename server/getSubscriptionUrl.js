@@ -5,7 +5,7 @@ const getSubscriptionUrl = async (ctx, accessToken, shop) => {
           name: "All-In-One Plan"
           trialDays: 14
           returnUrl: "${process.env.HOST}"
-          test: true
+          test: null
           lineItems: [
           {
             plan: {
